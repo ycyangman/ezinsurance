@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ezinsurance.dm.TBMSAPD001DM">
+    <select id="selectOneTBMSAPD001a" resultType="ezinsurance.vo.ProductVO">
+		SELECT
+			 prdcd            AS    prdcd          /* 상품코드      */
+			,prdnm            AS    prdnm          /* 상품명       */
+			,ins_dcd          AS    insDcd         /* 보험구분코드    */
+			,prd_sell_opn_dt  AS    prdSellOpnDt   /* 상품판매개시일자 */
+			,prd_sell_end_dt  AS    prdSellEndDt   /* 상품판매종료일자 */
+			,ins_prd          AS    insPrd         /* 보험기간 */
+			,ins_prd_typ_vl   AS    insPrdTypVl    /* 보험기간유형값  */
+			,ins_prd_ycnt     AS    insPrdYcnt     /* 보험기간년수    */
+			,pm_prd_tpcd      AS    pmPrdTpcd      /* 납입기간유형코드 */
+			,pm_prd           AS    pmPrd          /* 납입기간      */
+			,pm_prd_mcnt      AS    pmPrdMcnt      /* 납입기간개월수  */
+			,pm_cyl           AS    pmCyl          /* 납입주기(명)    */
+			,pm_cyl_cd        AS    pmCylCd        /* 납입주기코드    */
+			,min_ent_amt      AS    minEntAmt      /* 최소가입금액    */
+			,max_ent_amt      AS    maxEntAmt      /* 최대가입금액    */
+			,min_ent_age      AS    minEntAge      /* 최소가입연령    */
+			,max_ent_age      AS    maxEntAge      /* 최대가입연령    */
+			,prm              AS    prm            /* 보험료       */
+		FROM TBMSAPD001
+		WHERE prdcd = #{prdcd}
+    </select>
+
+</mapper>

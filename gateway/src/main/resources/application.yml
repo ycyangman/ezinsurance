@@ -1,0 +1,97 @@
+server:
+  port: 8080
+
+---
+
+spring:
+  profiles: default
+  cloud:
+    gateway:
+      routes:
+        - id: product
+          uri: http://localhost:8081
+          predicates:
+            - Path=/products/**, /productDocuments/** 
+        - id: customer
+          uri: http://localhost:8082
+          predicates:
+            - Path=/customers/** 
+        - id: plan
+          uri: http://localhost:8083
+          predicates:
+            - Path=/plans/** 
+        - id: proposal
+          uri: http://localhost:8084
+          predicates:
+            - Path=/proposals/** 
+        - id: payment
+          uri: http://localhost:8085
+          predicates:
+            - Path=/payments/** 
+        - id: alarm
+          uri: http://localhost:8086
+          predicates:
+            - Path=/msgs/** 
+        - id: myinsurance
+          uri: http://localhost:8087
+          predicates:
+            - Path= /mypages/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+---
+
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: plan
+          uri: http://plan:8080
+          predicates:
+            - Path=/plans/** 
+        - id: customer
+          uri: http://customer:8080
+          predicates:
+            - Path=/customers/** 
+        - id: payment
+          uri: http://payment:8080
+          predicates:
+            - Path=/payments/** 
+        - id: alarm
+          uri: http://alarm:8080
+          predicates:
+            - Path=/msgs/** 
+        - id: myinsurance
+          uri: http://myinsurance:8080
+          predicates:
+            - Path= /mypages/**
+        - id: proposal
+          uri: http://proposal:8080
+          predicates:
+            - Path=/proposals/** 
+        - id: product
+          uri: http://product:8080
+          predicates:
+            - Path=/products/**, /productDocuments/** 
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+server:
+  port: 8080

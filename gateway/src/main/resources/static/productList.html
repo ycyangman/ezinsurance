@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ezInsurance.com</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript">
+
+    jQuery(document).ready(function(){
+        getProducts();
+
+        $("#btnSrch").click(function() {
+            getProducts();
+        });
+
+        $("#btnStoreAdd").click(function() {
+            openStoreAddView();
+        });
+
+    });
+
+    function getProducts() {
+        $('#mainlList tbody').empty();
+
+        $.ajax({
+            type: "GET",
+            contentType: "application/json",
+            dataType: 'json',
+            url: "/products",
+            success: function(result){
+                console.log(result);
+                //var totalcnt = result.page.totalElements;
+                var products = result._embedded.products;
+
+                if(products.length < 1 ){
+                    $('#mainlList > tbody:last-child')
+                        .append($('<tr>').attr('style', 'text-align:center;')
+                            .append($('<td>').attr('colspan', '7').text('NO DATA'))
+                        );
+                }
+                else {
+                    for(var i=0; i<products.length; i++){
+                        var product = products[i];
+                        var productHref = product._links.product.href;
+
+                        var tmp = productHref.split("/");
+                        var productId = tmp[tmp.length-1];
+
+                        $('#mainlList > tbody:last-child')
+                            .append($('<tr>').attr('style', 'text-align:center;')
+                                .append($('<td>').text(product.prdcd+""))
+                                .append($('<td>').text(product.prdnm+""))
+                                .append($('<td>').text(product.prdSellOpnDt+""))
+								.append($('<td>').text(product.prdSellEndDt+""))
+                                .append($('<td>').text(product.insPrd+""))
+                                .append($('<td>').text(product.pmPrd+""))
+								.append($('<td>').text(product.pmCyl+""))
+                                .append($('<td>').text(product.minEntAmt+""))
+                                .append($('<td>').text(product.maxEntAmt+""))
+								.append($('<td>').text(product.minEntAge+""))
+                                .append($('<td>').text(product.maxEntAge+""))
+                                .append($('<td>').text(product.prm+""))
+                            );
+                    }
+                }
+            },
+            error: function (status) {
+                $('#mainlList > tbody:last-child')
+                    .append($('<tr>').attr('style', 'text-align:center; color:red;')
+                        .append($('<td>').attr('colspan', '7').text('조회 실패'))
+                    );
+             }
+        });
+    }
+
+    function delStore(productId) {
+        $.ajax({
+            type: "DELETE",
+            contentType: "application/json",
+            dataType: 'json',
+            url: "/products/"+productId,
+            success: function(result){
+                console.log(result);
+                getProducts();
+            },
+            error: function (status) {
+                alert('삭제실패');
+             }
+        });
+    }
+
+    function openStoreAddView() {
+        var url = "productMgnt.html";
+        window.open(url,"","width=500,height=350,left=250,top=150");
+    }
+    </script>
+
+</head>
+<body>
+
+<div class="wrap">
+    <div class="header">
+        <a href="index.html"><h1 class="logo">ezInsurance.com</h1></a>
+        <nav>
+            <ul class="topmenu">
+                <li class="selected"><a href="productList.html">상품관리</a></li>
+                <li><a href="planList.html">설계내역</a></li>
+                <li><a href="paymentList.html">결제내역</a></li>
+                <li><a href="mypages.html">내보험조회</a></li>
+                <li><a href="alarms.html">알림보기</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="contents-wrap">
+            <div class="contents-box">
+                <div class="contents-area">
+                    <h2 class="title">상품관리</h2>
+                    <div class="title-line"></div>
+
+                    <div class="btn-wrap">
+                        <div class="btn-left">
+
+                        </div>
+                        <div class="btn-right">
+                            <button class="Button bg-gray" id="btnSrch">새로고침</button>
+                            <button class="Button bg-red" id="btnStoreAdd">상품등록</button>
+                        </div>
+                    </div>
+
+                    <table class="Table" id="mainlList">
+                        <thead>
+                        <tr>
+                            <th>상품코드</th>
+                            <th>상품명</th>
+                            <th>판매시작일자</th>
+                            <th>판매종료일자</th>
+                            <th>보험기간</th>
+                            <th>납입기간</th>
+                            <th>납입주기</th>
+                            <th>최소가입금액</th>
+                            <th>최대가입금액</th>
+                            <th>최소가입연령</th>
+                            <th>최대가입연령</th>
+                            <th>보험료</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ezinsurance.dm.TBMSANB001DM">
+    <select id="selectOneTBMSANB001a" resultType="ezinsurance.vo.PrpsInfoVO">
+		SELECT
+			  prps_no         AS prpsNo       /* 청약번호       */
+			, prps_dt         AS prpsDt       /* 청약일자       */
+			, prdcd           AS prdcd        /* 상품코드       */
+			, prdnm           AS prdnm        /* 상품명        */
+			, cust_no         AS custNo       /* 고객번호       */
+			, cust_nm         AS custNm       /* 고객명        */
+			, cont_no         AS contNo       /* 계약번호       */
+			, cont_dt         AS contDt       /* 계약일자       */
+			, cont_stcd       AS contStcd     /* 계약상태코드     */
+			, cont_stnm       AS contStnm     /* 계약상태명      */
+			, prps_stcd       AS prpsStcd     /* 청약상태코드     */
+			, prps_stnm       AS prpsStnm     /* 청약상태명      */
+			, pm_mcd          AS pmMcd        /* 납입방법코드     */
+			, pm_cyl_cd       AS pmCylCd      /* 납입주기코드     */
+			, sprm            AS sprm         /* 합계보험료      */
+			, ent_amt         AS entAmt       /* 가입금액       */
+			, rlpm_prm        AS rlpmPrm      /* 실납입보험료     */
+			, ppsdsn_no       AS ppsdsnNo     /* 가입설계번호     */
+			, dps_dt          AS dpsDt        /* 입금일자       */
+			, prpsd_isue_dt   AS prpsdIsueDt  /* 청약서발행일자   */
+			, slct_plnr_eno   AS slctPlnrEno  /* 모집설계사사원번호 */
+			, slct_plnr_nm    AS slctPlnrNm   /* 모집설계사사원명  */
+			, slct_dof_org_no AS slctDofOrgNo /* 모집지점조직번호  */
+			, slct_dof_org_nm AS slctDofOrgNm /* 모집지점조직명   */
+		FROM TBMSANB001
+		WHERE prps_no = #{prpsNo}
+    </select>
+
+    <select id="selectListTBMSANB001a" resultType="ezinsurance.vo.PrpsInfoVO">
+		SELECT
+			  prps_no         AS prpsNo       /* 청약번호       */
+			, prps_dt         AS prpsDt       /* 청약일자       */
+			, prdcd           AS prdcd        /* 상품코드       */
+			, prdnm           AS prdnm        /* 상품명        */
+			, cust_no         AS custNo       /* 고객번호       */
+			, cust_nm         AS custNm       /* 고객명        */
+			, cont_no         AS contNo       /* 계약번호       */
+			, cont_dt         AS contDt       /* 계약일자       */
+			, cont_stcd       AS contStcd     /* 계약상태코드     */
+			, cont_stnm       AS contStnm     /* 계약상태명      */
+			, prps_stcd       AS prpsStcd     /* 청약상태코드     */
+			, prps_stnm       AS prpsStnm     /* 청약상태명      */
+			, pm_mcd          AS pmMcd        /* 납입방법코드     */
+			, pm_cyl_cd       AS pmCylCd      /* 납입주기코드     */
+			, sprm            AS sprm         /* 합계보험료      */
+			, ent_amt         AS entAmt       /* 가입금액       */
+			, rlpm_prm        AS rlpmPrm      /* 실납입보험료     */
+			, ppsdsn_no       AS ppsdsnNo     /* 가입설계번호     */
+			, dps_dt          AS dpsDt        /* 입금일자       */
+			, prpsd_isue_dt   AS prpsdIsueDt  /* 청약서발행일자   */
+			, slct_plnr_eno   AS slctPlnrEno  /* 모집설계사사원번호 */
+			, slct_plnr_nm    AS slctPlnrNm   /* 모집설계사사원명  */
+			, slct_dof_org_no AS slctDofOrgNo /* 모집지점조직번호  */
+			, slct_dof_org_nm AS slctDofOrgNm /* 모집지점조직명   */
+		FROM TBMSANB001
+		WHERE cust_no = #{custNo}
+    </select>
+
+	<update id="updateOneTBMSANB001a" parameterType="java.util.HashMap">
+		UPDATE  
+			TBMSANB001  
+		SET  
+		    prps_stcd = #{prpsStcd}
+		   ,prps_stnm = #{prpsStnm}
+	    WHERE prps_no = #{prpsNo}
+	</update>
+</mapper>

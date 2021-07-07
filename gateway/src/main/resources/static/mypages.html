@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ezInsurance.com</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript">
+
+    jQuery(document).ready(function(){
+        loadMypages();
+
+        $("#btnMypages").click(function() {
+            loadMypages();
+        });
+    });
+
+    function loadMypages() {
+        $('#tblMypages tbody').empty();
+
+        var data = {};
+
+        //data['type']   = $("input[name=rdoType]:checked").val();
+		data['svcId']  = 'MPA001SVC';
+        data['myName'] = $("#myName").val();
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json",
+            dataType: 'json',
+            url: "/mypages/online",
+            data: JSON.stringify(data),
+            success: function(result){
+                console.log(result);
+                var mypages = result.data.mypages;
+				
+                if(mypages.length < 1 ){
+                    $('#tblMypages > tbody:last-child')
+                        .append($('<tr>').attr('style', 'text-align:center;')
+                            .append($('<td>').attr('colspan', '12').text('NO DATA'))
+                        );
+                }
+                else {
+                    for(var i=0; i<mypages.length; i++){
+                        var mypage = mypages[i];
+          				
+                        $('#tblMypages > tbody:last-child')
+                            .append($('<tr>').attr('style', 'text-align:center;')
+                                .append($('<td>').text(mypage.id))
+								.append($('<td>').text(mypage.custNm+""))
+                                .append($('<td>').text(mypage.gndr+""))
+                                .append($('<td>').text(mypage.prdnm+""))
+                                .append($('<td>').text(mypage.ppsdsnNo+""))
+                                .append($('<td>').text(mypage.progSt+""))                                
+                                .append($('<td>').text(mypage.prpsNo+""))
+								.append($('<td>').text(mypage.prpsStnm+""))
+                                .append($('<td>').text(mypage.regDtm+""))
+								.append($('<td>').text(mypage.eventType+""))
+                            );
+                    }
+                }
+            },
+            error: function (status) {
+                $('#tblMypages > tbody:last-child')
+                    .append($('<tr>').attr('style', 'text-align:center; color:red;')
+                        .append($('<td>').attr('colspan', '12').text('조회 실패'))
+                    );
+             }
+        });
+    }
+
+    </script>
+
+</head>
+<body>
+
+<div class="wrap">
+    <div class="header">
+        <a href="index.html"><h1 class="logo">ezInsurance.com</h1></a>
+        <nav>
+            <ul class="topmenu">
+                <li><a href="productList.html">상품관리</a></li>
+                <li><a href="planList.html">설계내역</a></li>
+                <li><a href="paymentList.html">결제내역</a></li>
+                <li class="selected"><a href="mypages.html">내보험조회</a></li>
+                <li><a href="alarms.html">알림보기</a></li>
+                <!--<li><a href="commissions.html">수수료</a></li>-->
+            </ul>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="contents-wrap">
+            <div class="contents-box">
+                <div class="contents-area">
+                    <h2 class="title">내보험조회</h2>
+                    <div class="title-line"></div>
+
+                    <div class="btn-wrap">
+						<!--
+                        <div class="btn-left">
+                            <input type="radio" value="1" name="rdoType" id="rdoType0">설계사
+                            <input type="radio" value="2" name="rdoType" id="rdoType1">고객
+                        </div>
+						-->
+						고객
+                        <input type="text" style="margin-left: 20px;" id="myName" size="15">
+                        <div class="btn-right">
+                            <button class="Button bg-gray" id="btnMypages">조회</button>
+                        </div>
+                    </div>
+                    <BR>
+                    <table class="Table" id="tblMypages">
+                        <thead>
+                        <tr>
+                            <th>순번</th>
+                            <th>고객명</th>
+                            <th>성별</th>
+							<th>상품명</th>
+                            <th>가입설계번호</th>
+                            <th>설계진행상태</th>
+                            <th>청약번호</th>
+							<th>청약상태</th>
+							<th>등록일시</th>
+							<th>eventType</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
