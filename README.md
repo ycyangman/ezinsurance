@@ -832,22 +832,25 @@ kubectl label namespace ezinsurance istio-injection=enabled
 
 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
 
-- 동시사용자 1명, 10초 동안 부하 생성 시 모두 정상
+- 동시사용자 1명, 60초 동안 부하 생성 시 모두 정상
 ```
-siege -c10 -t60S -r10 --content-type "application/json" 'http://proposal:8080/proposals/online POST {"svcId":"NBA001SVC", "svcFn":"getCntr", "prpsNo":"20210704165943"}' -v
+siege -c1 -t60S -r10 --content-type "application/json" 'http://proposal:8080/proposals/online POST {"svcId":"NBA001SVC", "svcFn":"getCntr", "prpsNo":"20210704165943"}' -v
 ** SIEGE 4.0.4
 ** Preparing 1 concurrent users for battle.
 The server is now under siege...
-HTTP/1.1 201     1.96 secs:     552 bytes ==> POST http://plan:8080/plans
-HTTP/1.1 201     1.66 secs:     552 bytes ==> POST http://plan:8080/plans
-HTTP/1.1 201     1.66 secs:     552 bytes ==> POST http://plan:8080/plans
-HTTP/1.1 201     1.81 secs:     552 bytes ==> POST http://plan:8080/plans
-HTTP/1.1 201     1.80 secs:     552 bytes ==> POST http://plan:8080/plans
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 
 Lifting the server siege...
 Transactions:                      5 hits
 Availability:                 100.00 %
-Elapsed time:                   9.92 secs
+Elapsed time:                   59.92 secs
 Data transferred:               0.00 MB
 Response time:                  1.78 secs
 Transaction rate:               0.50 trans/sec
@@ -862,18 +865,8 @@ Shortest transaction:           1.66
 
 ```
 cd ../yaml
-kubectl apply -f dr-rod.yaml
+kubectl apply -f dr-pay.yaml
 ```
-DestinationRule 적용되어 서킷 브레이킹 동작 확인 (kiali 화면)
-
-
-다시 부하 발생하여 DestinationRule 적용 제거하여 정상 처리 확인
-```
-cd ezinsurance/yaml
-kubectl delete -f dr-pay.yaml
-```
-
-
 istio-injection 적용 (기 적용완료)
 ```
 kubectl label namespace ezinsurance istio-injection=enabled
@@ -925,11 +918,12 @@ HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposal
 HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-
+```
 * 이후 이러한 패턴이 계속 반복되면서 시스템은 도미노 현상이나 자원 소모의 폭주 없이 잘 운영됨
 
-:
+![istio_injection_siege](https://user-images.githubusercontent.com/84304227/124997342-641fa600-e085-11eb-8e80-c3dfbcb166cc.PNG)
 
+```
 Lifting the server siege...
 Transactions:                    445 hits
 Availability:                  84.28 %
@@ -954,6 +948,11 @@ kubectl get all -n istio-system
 
 ![kiali](https://user-images.githubusercontent.com/84304227/124938818-94465500-e043-11eb-966b-74e9fad21e68.PNG)
 
+다시 부하 발생하여 DestinationRule 적용 제거하여 정상 처리 확인
+```
+cd ezinsurance/yaml
+kubectl delete -f dr-pay.yaml
+```
 
 ### 오토스케일 아웃
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
@@ -1033,7 +1032,7 @@ HTTP/1.1 200     5.13 secs:    1849 bytes ==> GET  /customers
 
 ```
 
-- # 컨테이너 이미지 Update (readness, liveness 미설정 상태)
+* 컨테이너 이미지 Update (readness, liveness 미설정 상태)
 ```
 - kubectl apply -f customer_none.yaml
 ```
@@ -1055,7 +1054,8 @@ Shortest transaction:           0.57
 
 
 ```
-배포기간중 Availability 가 평소 100%에서 70% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함:
+배포기간중 Availability 가 평소 100% 미만으로 가용되는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 
+이를 막기위해 Readiness Probe 를 설정함:
 
 ```
 # deployment.yaml 의 readiness probe 의 설정:
@@ -1080,10 +1080,14 @@ Shortest transaction:           0.57
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
 
-Self-healing (Liveness Probe)
+# Self-healing (Liveness Probe)
 LivenessProbe : 서비스 장애를 판단하여 containerd 의 restart 여부를 판단
-컨테이너가 기동 된후 initialDelaySecond에 설정된 값 만큼 대기를 했다가 periodSecond 에 정해진 주기 단위로 컨테이너의 헬스 체크를 한다. initialDelaySecond를 주는 이유는, 컨테이너가 기동 되면서 애플리케이션이 기동될텐데, 설정 정보나 각종 초기화 작업이 필요하기 때문에, 컨테이너가 기동되자 마자 헬스 체크를 하게 되면, 서비스할 준비가 되지 않았기 때문에 헬스 체크에 실패할 수 있기 때문에, 준비 기간을 주는 것이다. 준비 시간이 끝나면, periodSecond에 정의된 주기에 따라 헬스 체크를 진행하게 된다.
+컨테이너가 기동 된후 initialDelaySecond에 설정된 값 만큼 대기를 했다가 periodSecond 에 정해진 주기 단위로 컨테이너의 헬스 체크를 한다. initialDelaySecond를 주는 이유는, 컨테이너가 기동 되면서 애플리케이션이 기동될텐데, 설정 정보나 각종 초기화 작업이 필요하기 때문에, 컨테이너가 기동되자 마자 헬스 체크를 하게 되면, 서비스할 준비가 되지 않았기 때문에 헬스 체크에 실패할 수 있기 때문에, 준비 기간을 주는 것이다. 준비 시간이 끝나면, periodSecond에 정의된 주기에 따라 헬스 체크를 진행하게 되면 세가지 방식을 제공
+•	Command probe
+•	HTTP probe
+•	TCP probe
 
+Command probe로 진행
 
 ```
           resources:
@@ -1111,13 +1115,12 @@ LivenessProbe : 서비스 장애를 판단하여 containerd 의 restart 여부�
               command:
               - cat
               - /tmp/healthy
-# 프로브는 포드의 모든 컨테이너가 생성되고 90초후에 호출되고, 2초내에 응답해야 하며, 쿠버네티스는 프로브를 5초마다 호출한다.
-# 호출의 결과가 세번이상 실패하면 컨테이는 중지되고 재시작될것이다. 
             initialDelaySeconds: 90
             timeoutSeconds: 2
             periodSeconds: 5
             failureThreshold: 3
-```
+# 프로브는 포드의 모든 컨테이너가 생성되고 90초후에 호출되고, 2초내에 응답해야 하며, 쿠버네티스는 프로브를 5초마다 호출한다.
+# 호출의 결과가 세번이상 실패하면 컨테이는 중지되고 재시작될것이다.
 
 kubectl get po -n ezinsurance -w
 
@@ -1126,11 +1129,11 @@ payment-7bf56d654c-f7hpr       0/1     CrashLoopBackOff   5          7m17s
 payment-7bf56d654c-f7hpr       0/1     Running            6          8m38s
 payment-7bf56d654c-f7hpr       0/1     CrashLoopBackOff   6          9m52s
 payment-7bf56d654c-f7hpr       0/1     Running            7          12m
+```
 
-.
-포드의 상태를 확인했으나 기대한 대로 되지 않아 CrashLoopBackOff (shutdown->restart) 계속 발생함.
+- 포드의 상태를 확인했으나 기대한 대로 되지 않음 CrashLoopBackOff (shutdown->restart) 계속 발생함.(?)
 
-- API 를 호출시 어플리케이션의 메모리 과부화를 발생시켜  livenessProbe 설정에 의하여 자동으로 서비스가 재시작으로 확
+- 어플리케이션의 메모리 과부화를 발생시켜  livenessProbe 설정에 의하여 자동으로 서비스가 재시작으로 확인함.
 
 --메모리 과부하 호출
 ```
@@ -1163,7 +1166,6 @@ public class PaymentController {
 ```
 
 siege -c1 -t1S  --content-type "application/json" 'http://payment:8080/callMemleak' -v
-
 
 kubectl get po -n ezinsurance -w
 proposal-59576596c5-7j7b6      0/1     Running   2          6h34m
@@ -1206,9 +1208,10 @@ metadata:
 data:
   # maribdb 접속정보
   datasource.schema: "classicmodels"
-  datasource.username: "sklina"
+  datasource.username: "sk????"
   datasource.password: "????????"
-  api.url.payment: http://paymemt:8080
+  api.url.payment: http://payment:8080
+  api.url.proudct: http://paymemt:8080
   alarm.prefix: Hello
 
 #yaml/plan.yaml (configmap 사용)
