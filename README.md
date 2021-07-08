@@ -912,26 +912,6 @@ HTTP/1.1 500     0.10 secs:     179 bytes ==> POST http://proposal:8080/proposal
 
 * 요청을 어느정도 돌려보내고나니, 기존에 밀린 일들이 처리되었고, 회로를 닫아 요청을 다시 받기 시작
 
-HTTP/1.1 201     1.46 secs:     207 bytes ==> POST http://localhost:8081/orders  
-HTTP/1.1 201     1.33 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     1.36 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     1.63 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     1.65 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     1.68 secs:     207 bytes ==> POST http://localhost:8081/orders
-
-
-* 다시 요청이 쌓이기 시작하여 건당 처리시간이 610 밀리를 살짝 넘기기 시작 => 회로 열기 => 요청 실패처리
-
-[error] socket: read error Connection reset by peer sock.c:539: Connection reset by peer
-HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 500     0.01 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 500     0.02 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.37 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 500     0.07 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 500     0.01 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
-
-* 생각보다 빨리 상태 호전됨 - (건당 (쓰레드당) 처리시간이 610 밀리 미만으로 회복) => 요청 수락
-
 HTTP/1.1 200     1.33 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 HTTP/1.1 200     1.34 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
