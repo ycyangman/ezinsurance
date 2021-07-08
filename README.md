@@ -509,9 +509,10 @@ public interface ProductService {
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
+결제가 이루어진 후에 숙소 시스템의 상태가 업데이트 되고, 예약 시스템의 상태가 업데이트 되며, 예약 및 취소 메시지가 전송되는 시스템과의 통신 행위는 비동기식으로 처리한다.
 
-결제가 이루어진 후에 청약시스템으로 이를 알려주는 행위는 동기식이 아니라 비 동기식으로 처리하여 청약 시스템의 처리를 위하여 결제서비스가 블로킹 되지 않아도록 처리한다.
- 
+결제가 이루어진 후에 청약시스템으로 진행결과를 알려주는 행위는 동기식이 아니라 비동기식으로 처리되어 청약상태 및 후속 계약업무도 비동기 식으로 처리한다.
+
 - 이를 위하여 결제이력에 기록을 남긴 후에 곧바로 결제승인이 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
  
 ```
@@ -533,10 +534,10 @@ public class Payment {
 
 }
 ```
-- 상점 서비스에서는 결제승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
+- 각각의 서비스에서는 결제승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
 
 ```
-package ezdelivery;
+package ezinsurance;
 
 ...
 
@@ -544,55 +545,49 @@ package ezdelivery;
 public class PolicyHandler{
 
     @StreamListener(KafkaProcessor.INPUT)
-    public void whenever결제승인됨_주문정보받음(@Payload 결제승인됨 결제승인됨){
+    public void whenEventOccurred (@Payload Mypage eventInfo) {
 
-        if(결제승인됨.isMe()){
-            System.out.println("##### listener 주문정보받음 : " + 결제승인됨.toJson());
-            // 주문 정보를 받았으니, 요리를 슬슬 시작해야지..
-            
-        }
+    	System.out.println("\n\n##### eventInfo : " + eventInfo.toString() + "\n\n");
+	//카프카 멘시지 수신처리.
+	// 결재후에 업무처리 ...
+
+
+    	String eventType = eventInfo.getEventType();
+
+
     }
 
 }
 
 ```
-실제 구현을 하자면, 카톡 등으로 점주는 노티를 받고, 요리를 마친후, 주문 상태를 UI에 입력할테니, 우선 주문정보를 DB에 받아놓은 후, 이후 처리는 해당 Aggregate 내에서 하면 되겠다.:
+실제 구현을 하자면, 카톡 등으로 상품설명서발행, 설계저장 등의 본인진행상태를 확인하고 청약업무를 진행한다.
   
+
+메시지 서비스는 예약/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 메시지 서비스가 유지보수로 인해 잠시 내려간 상태 라도 예약을 받는데 문제가 없다.
+
+#메시지서비시 를 잠시 내려놓음
 ```
-  @Autowired 주문관리Repository 주문관리Repository;
-  
-  @StreamListener(KafkaProcessor.INPUT)
-  public void whenever결제승인됨_주문정보받음(@Payload 결제승인됨 결제승인됨){
-
-      if(결제승인됨.isMe()){
-          카톡전송(" 주문이 왔어요! : " + 결제승인됨.toString(), 주문.getStoreId());
-
-          주문관리 주문 = new 주문관리();
-          주문.setId(결제승인됨.getOrderId());
-          주문관리Repository.save(주문);
-      }
-  }
-
+http POST a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080/proposals \
+ppsdsnNo="20210708033005" \
+prdcd="P00000005" \
+prdnm="(무)재해사망보장" \
+custNo="000000002" \
+custNm="양건우" \
+slctPlnrEno="1000000000" \
+slctPlnrNm="라이나" \
 ```
 
-상품 시스템은 보험가입/결제시스템이 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 상품시스템이 유지보수로 인해 잠시 내려간 상태라도 청약가입을 처리하는데 문제가 없다:
-```
-# 상품 서비스 (product) 를 잠시 내려놓음 (ctrl+c)
+#진행상태 확인
 
-#주문처리
-http localhost:8081/orders item=통닭 storeId=1   #Success
-http localhost:8081/orders item=피자 storeId=2   #Success
+http a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080:8080/mypages     # 진행상태 안바뀜 확인
 
-#주문상태 확인
-http localhost:8080/orders     # 주문상태 안바뀜 확인
-
-#상점 서비스 기동
-cd 상점
+#마이페이지 서비스 기동
+cd 마이페이지
 mvn spring-boot:run
 
-#주문상태 확인
-http localhost:8080/orders     # 모든 주문의 상태가 "배송됨"으로 확인
-```
+#진행상태 확인
+http a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080:8080/mypages     # 모든 주문의 상태가 "배송됨"으로 확인
+
 
 
 # 운영
@@ -601,12 +596,12 @@ http localhost:8080/orders     # 모든 주문의 상태가 "배송됨"으로 �
 
 * EKS Cluster create
 ```
-$ eksctl create cluster --name skccuer10-Cluster --version 1.15 --nodegroup-name standard-workers --node-type t3.medium --nodes 3 --nodes-min 1 --nodes-max 4
+$ eksctl create cluster --user08-eks --version 1.15 --nodegroup-name standard-workers --node-type t3.medium --nodes 3 --nodes-min 1 --nodes-max 4
 ```
 
 * EKS Cluster settings
 ```
-$ aws eks --region ap-northeast-2 update-kubeconfig --name skccuer10-Cluster
+$ aws eks --region ap-southeast-2 update-kubeconfig --name user08-eks
 $ kubectl config current-context
 $ kubectl get all
 ```
@@ -623,16 +618,26 @@ $ kubectl get deployment metrics-server -n kube-system
 ```
 
 * Kafka install (kubernetes/helm)
+--Helm 3.x 설치
 ```
-$ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
-$ kubectl --namespace kube-system create sa tiller      
-$ kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-$ helm init --service-account tiller
-$ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
-$ helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-$ helm repo update
-$ helm install --name my-kafka --namespace kafka incubator/kafka
-$ kubectl get all -n kafka
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+* Helm 에게 권한을 부여하고 초기화
+```
+kubectl --namespace kube-system create sa tiller
+kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+```
+* 카프카 설치
+
+ ```
+helm repo add incubator https://charts.helm.sh/incubator 
+helm repo update 
+kubectl create ns kafka 
+helm install my-kafka --namespace kafka incubator/kafka 
+kubectl get all -n kafka
 ```
 
 * Istio 설치
@@ -655,21 +660,21 @@ $ kubectl edit service/kiali -n istio-system
 
 * Namespace 생성
 ```
-$ kubectl create namespace ezdelivery
+$ kubectl create namespace ezinsurance
 ```
 
 * Namespace istio enabled
 ```
-$ kubectl label namespace ezdelivery istio-injection=enabled 
+$ kubectl label namespace ezinsurance istio-injection=enabled 
+```
 
 - (설정해제 : kubectl label namespace ezdelivery istio-injection=disabled --overwrite)
-```
 
 * siege deploy
 ```
-cd ezdelivery/yaml
+cd ezinsurance/yaml
 kubectl apply -f siege.yaml 
-kubectl exec -it siege -n ezdelivery -- /bin/bash
+kubectl exec -it siege -n ezinsurance -- /bin/bash
 apt-get update
 apt-get install httpie
 ```
@@ -679,7 +684,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: siege
-  namespace: ezdelivery
+  namespace: ezinsurance
 spec:
   containers:
     - name: siege
@@ -689,13 +694,14 @@ spec:
 
 * ECR image repository
 ```
-$ aws ecr create-repository --repository-name user08-ezdelivery-gateway --region ap-northeast-2
-$ aws ecr create-repository --repository-name user08-ezdelivery-store --region ap-northeast-2
-$ aws ecr create-repository --repository-name user08-ezdelivery-order --region ap-northeast-2
-$ aws ecr create-repository --repository-name user08-ezdelivery-payment --region ap-northeast-2
-$ aws ecr create-repository --repository-name user08-ezdelivery-mypage --region ap-northeast-2
-$ aws ecr create-repository --repository-name user08-ezdelivery-alarm --region ap-northeast-2
-$ aws ecr create-repository --repository-name user08-ezdelivery-delivery --region ap-northeast-2
+$ aws ecr create-repository --repository-name ezinsurance-gateway --region ap-southeast-2
+$ aws ecr create-repository --repository-name ezinsurance-product --region ap-southeast-2
+$ aws ecr create-repository --repository-name ezinsurance-customer --region ap-southeast-2
+$ aws ecr create-repository --repository-name ezinsurance-plan --region ap-southeast-2
+$ aws ecr create-repository --repository-name ezinsurance-proposal --region ap-southeast-2
+$ aws ecr create-repository --repository-name ezinsurance-payment --region ap-southeast-2
+$ aws ecr create-repository --repository-name ezinsurance-myinsurance --region ap-southeast-2
+$ aws ecr create-repository --repository-name ezinsurance-alarm --region ap-southeast-2
 
 ```
 
@@ -703,52 +709,61 @@ $ aws ecr create-repository --repository-name user08-ezdelivery-delivery --regio
 ```
 $ cd gateway
 $ mvn package
-$ docker build -t 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-gateway:latest .
-$ docker push 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-gateway:latest
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-gateway:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-gateway:latest
 
-$ cd ../store
+$ cd ../product
 $ mvn package
-$ docker build -t 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-store:latest .
-$ docker push 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-store:latest
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-product:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-product:latest
 
-$ cd ../order
+$ cd ../customer
 $ mvn package
-$ docker build -t 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-order:latest .
-$ docker push 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-order:latest
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-customer:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-customer:latest
+
+$ cd ../plan
+$ mvn package
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-plan:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-plan:latest
+
+$ cd ../proposal
+$ mvn package
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-proposal:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-proposal:latest
 
 $ cd ../payment
 $ mvn package
-$ docker build -t 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-payment:latest .
-$ docker push 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-payment:latest
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-payment:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-payment:latest
 
-$ cd ../mypage
+$ cd ../myinsurance
 $ mvn package
-$ docker build -t 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-mypage:latest .
-$ docker push 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-mypage:latest
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-myinsurance:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-myinsurance:latest
 
 $ cd ../alarm
 $ mvn package
-$ docker build -t 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-alarm:latest .
-$ docker push 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-alarm:latest
-
-$ cd ../delivery
-$ mvn package
-$ docker build -t 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-delivery:latest .
-$ docker push 052937454741.dkr.ecr.ap-northeast-2.amazonaws.com/user08-ezdelivery-delivery:latest
+$ docker build -t 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-alarm:latest .
+$ docker push 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-alarm:latest
 
 ```
 
 * Deploy
 ```
-$ kubectl apply -f siege.yaml
-$ kubectl apply -f configmap.yaml
-$ kubectl apply -f gateway.yaml
-$ kubectl apply -f store.yaml
-$ kubectl apply -f order.yaml
-$ kubectl apply -f payment.yaml
-$ kubectl apply -f mypage.yaml
-$ kubectl apply -f delivery.yaml
-$ kubectl apply -f alarm.yaml
+cd ../yaml
+
+kubectl apply -f siege.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f gateway.yaml
+kubectl apply -f customer.yaml
+kubectl apply -f product.yaml
+kubectl apply -f plan.yaml
+kubectl apply -f proposal.yaml
+kubectl apply -f myinsurance.yaml
+kubectl apply -f proposal.yaml
+kubectl apply -f payment.yaml
+kubectl apply -f alarm.yaml
 
 ```
 ## CI/CD 설정
@@ -756,53 +771,96 @@ $ kubectl apply -f alarm.yaml
 각 구현체들은 github의 각각의 source repository 에 구성
 Image repository는 ECR 사용
 
-각 구현체들은 각자의 source repository 에 구성되었고, 사용한 CI/CD 플랫폼은 GCP를 사용하였으며, 
-pipeline build script 는 각 프로젝트 폴더 이하에 cloudbuild.yml 에 포함되었다.
-
-
 ## 동기식 호출 / 서킷 브레이킹 / 장애격리
+
 
 서킷 브레이킹 프레임워크의 선택: istio-injection + DestinationRule
 
-```
-kubectl get ns -L istio-injection
-kubectl label namespace ezdelivery istio-injection=enabled
-````
-- 약, 결제 서비스 모두 아무런 변경 없음
-- 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- 동시사용자 100명, 60초 동안 실시
+시나리오는 가입설계(plan) 보험료 계산시 --> 상품(product) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고  계산요청이 과도할 경우 CB 를 통하여 장애격리.
+
+- DestinationRule 를 생성하여 circuit break 가 발생할 수 있도록 설정 최소 connection pool 설정
 
 ```
-kubectl run siege --image=apexacme/siege-nginx -n ezdelivery
-kubectl exec -it siege -c siege -n ezdelivery -- /bin/bash
-siege -c100 -t60S -r10 --content-type "application/json" 'http://order:8080/orders POST {"storeName": "yogiyo"}'
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dr-prod
+  namespace: ezinsurance
+spec:
+  host: product
+  trafficPolicy:
+    connectionPool:
+      http:
+        http1MaxPendingRequests: 1
+        maxRequestsPerConnection: 1
+#    outlierDetection:
+#      interval: 1s
+#      consecutiveErrors: 2
+#      baseEjectionTime: 10s
+#      maxEjectionPercent: 100
+```
+
+- istio-injection 활성화 및 room pod container 확인
+```
+
+kubectl get ns -L istio-injection
+kubectl label namespace ezinsurance istio-injection=enabled
+
+````
+부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
+
+- 동시사용자 1명, 10초 동안 부하 생성 시 모두 정상
+```
+root@siege:/# siege -c1 -t10S -v --content-type "application/json" 'http://plan:8080/plans POST {"svcId":"PLA001SVC", "svcFn":"calcPrm", "prdcd":"P00000001","entAmt":"50000"}'
+** SIEGE 4.0.4
+** Preparing 1 concurrent users for battle.
+The server is now under siege...
+HTTP/1.1 201     1.96 secs:     552 bytes ==> POST http://plan:8080/plans
+HTTP/1.1 201     1.66 secs:     552 bytes ==> POST http://plan:8080/plans
+HTTP/1.1 201     1.66 secs:     552 bytes ==> POST http://plan:8080/plans
+HTTP/1.1 201     1.81 secs:     552 bytes ==> POST http://plan:8080/plans
+HTTP/1.1 201     1.80 secs:     552 bytes ==> POST http://plan:8080/plans
+
+Lifting the server siege...
+Transactions:                      5 hits
+Availability:                 100.00 %
+Elapsed time:                   9.92 secs
+Data transferred:               0.00 MB
+Response time:                  1.78 secs
+Transaction rate:               0.50 trans/sec
+Throughput:                     0.00 MB/sec
+Concurrency:                    0.90
+Successful transactions:           5
+Failed transactions:               0
+Longest transaction:            1.96
+Shortest transaction:           1.66
 ```
 서킷 브레이킹을 위한 DestinationRule 적용
 
 ```
-cd ezdelivery/yaml
-kubectl apply -f dr-pay.yaml
+cd ../yaml
+kubectl apply -f dr-rod.yaml
 ```
 DestinationRule 적용되어 서킷 브레이킹 동작 확인 (kiali 화면)
 
 
 다시 부하 발생하여 DestinationRule 적용 제거하여 정상 처리 확인
 ```
-cd ezdelivery/yaml
+cd ezinsurance/yaml
 kubectl delete -f dr-pay.yaml
 ```
 
 
 istio-injection 적용 (기 적용완료)
 ```
-kubectl label namespace mybnb istio-injection=enabled
+kubectl label namespace ezinsurance istio-injection=enabled
 ```
 * 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
 - 동시사용자 100명
 - 60초 동안 실시
 
 ```
-$ siege -c100 -t60S -r10 --content-type "application/json" 'http://order:8080/orders POST {"storeName": "yogiyo"}'
+$ siege -c6-t30S -r10 --content-type "application/json" 'http://plan:8080/plans POST {"svcId":"PLA001SVC", "svcFn":"calcPrm", "prdcd":"P00000001","entAmt":"50000"}' -v
 
 ** SIEGE 4.0.5
 ** Preparing 100 concurrent users for battle.
@@ -863,8 +921,6 @@ HTTP/1.1 500     4.23 secs:     248 bytes ==> POST http://localhost:8081/orders
 HTTP/1.1 201     4.76 secs:     207 bytes ==> POST http://localhost:8081/orders
 HTTP/1.1 201     4.74 secs:     207 bytes ==> POST http://localhost:8081/orders
 
-
-
 :
 :
 
@@ -892,13 +948,13 @@ Shortest transaction:	        0.00
 
 - (istio injection 적용한 경우) istio injection 적용 해제
 ```
-kubectl label namespace ezdelivery istio-injection=disabled --overwrite
+kubectl label namespace ezinsurance istio-injection=disabled --overwrite
 
-kubectl apply -f order.yaml
-kubectl apply -f payment.yaml
+kubectl apply -f customer.yaml
+
 ```
 
-- 결제서비스 배포시 resource 설정 적용되어 있음
+- 고객서비스 배포시 resource 설정 적용되어 있음
 ```
     spec:
       containers:
@@ -912,38 +968,40 @@ kubectl apply -f payment.yaml
 
 - 결제서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
-kubectl autoscale deploy payment -n ezdelivery --min=1 --max=10 --cpu-percent=15
-#kubectl autoscale deploy order --min=1 --max=10 --cpu-percent=15
-$ kubectl get deploy auth -n ezdelivery -w 
+kubectl autoscale deploy customer -n ezinsurance --min=1 --max=10 --cpu-percent=15
+
 ```
-- CB 에서 했던 방식대로 워크로드를 2분 동안 걸어준다.
+- 워크로드를 2분 동안 걸어준다.
 ```
-siege -c100 -t120S -r10 --content-type "application/json" 'http://order:8080/orders POST {"storeName": "yogiyo"}'
+siege -c61 -t120S -r1 -v  "application/json" 'http://customer:8080/customers'
 ```
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
 ```
-kubectl get deploy order -w -n ezdelivery 
+kubectl get deploy plan -customer -n ezinsurance 
 kubectl get deploy order -w
 ```
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 ```
-NAME    DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-pay     1         1         1            1           17s
-pay     1         2         1            1           45s
-pay     1         4         1            1           1m
+root@labs--620633116:/home/project/personal/ezinsurance/yaml# kubectl get deploy customer -n ezinsurance -w 
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+customer   1/1     1            1           4m39s
+customer   1/4     1            1           5m52s
+customer   1/4     1            1           5m52s
+customer   1/4     1            1           5m52s
+customer   1/4     4            1           5m52s
+customer   2/4     4            2           5m54s
+customer   3/4     4            3           5m57s
+customer   4/4     4            4           5m57s
+customer   4/8     4            4           6m7s
 :
+
+root@labs--620633116:/home/project/personal/ezinsurance/yaml# kubectl get hpa -n ezinsurance
+NAME       REFERENCE             TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+customer   Deployment/customer   5%/15%          1         10        10         12m
+plan       Deployment/plan       <unknown>/15%   1         10        1          28m
 ```
-- siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
-```
-Transactions:		        5078 hits
-Availability:		       92.45 %
-Elapsed time:		       120 secs
-Data transferred:	        0.34 MB
-Response time:		        5.60 secs
-Transaction rate:	       17.15 trans/sec
-Throughput:		        0.01 MB/sec
-Concurrency:		       96.02
-```
+
+![auto-scale_after_pods](https://user-images.githubusercontent.com/84304227/124877556-29c2f400-e006-11eb-9e84-9984b3a016ee.PNG)
 
 
 ## 무정지 재배포
@@ -952,65 +1010,159 @@ Concurrency:		       96.02
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-siege -c100 -t120S -r10 --content-type "application/json" 'http://order:8080/orders POST {"storeName": "yogiyo"}'
+siege -c61 -t120S -r1 -v  "application/json" 'http://customer:8080/customers'
 
 ** SIEGE 4.0.5
 ** Preparing 100 concurrent users for battle.
 The server is now under siege...
 
-HTTP/1.1 201     0.68 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     0.68 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     0.70 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     0.70 secs:     207 bytes ==> POST http://localhost:8081/orders
+HTTP/1.1 200     2.53 secs:    1849 bytes ==> GET  /customers
+HTTP/1.1 200     5.12 secs:    1849 bytes ==> GET  /customers
+HTTP/1.1 200     5.06 secs:    1849 bytes ==> GET  /customers
+HTTP/1.1 200     5.12 secs:    1849 bytes ==> GET  /customers
+HTTP/1.1 200     5.13 secs:    1849 bytes ==> GET  /customers
 :
 
 ```
 
 - # 컨테이너 이미지 Update (readness, liveness 미설정 상태)
 ```
-- kubectl apply -f order_na.yaml 실행
+- kubectl apply -f customer_none.yaml
 ```
 
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
 ```
-Transactions:		        3078 hits
-Availability:		       70.45 %
-Elapsed time:		       120 secs
-Data transferred:	        0.34 MB
-Response time:		        5.60 secs
-Transaction rate:	       17.15 trans/sec
-Throughput:		        0.01 MB/sec
-Concurrency:		       96.02
+Transactions:                    882 hits
+Availability:                  46.01 %
+Elapsed time:                  27.52 secs
+Data transferred:               1.56 MB
+Response time:                  1.80 secs
+Transaction rate:              32.05 trans/sec
+Throughput:                     0.06 MB/sec
+Concurrency:                   57.57
+Successful transactions:         882
+Failed transactions:            1035
+Longest transaction:            9.16
+Shortest transaction:           0.57
+
 
 ```
 배포기간중 Availability 가 평소 100%에서 70% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함:
 
 ```
-
 # deployment.yaml 의 readiness probe 의 설정:
-- kubectl apply -f order.yaml 실행
+
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+	    
+	    
+- kubectl apply -f customer.yaml 실행
 ```
 
 - 동일한 시나리오로 재배포 한 후 Availability 확인:
-```
-Transactions:		        3078 hits
-Availability:		       100 %
-Elapsed time:		       120 secs
-Data transferred:	        0.34 MB
-Response time:		        5.60 secs
-Transaction rate:	       17.15 trans/sec
-Throughput:		        0.01 MB/sec
-Concurrency:		       96.02
 
-```
+![readiness](https://user-images.githubusercontent.com/84304227/124881050-e10d3a00-e009-11eb-82f4-048c81b01861.PNG)
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
+
 Self-healing (Liveness Probe)
+LivenessProbe : 서비스 장애를 판단하여 containerd 의 restart 여부를 판단
 컨테이너가 기동 된후 initialDelaySecond에 설정된 값 만큼 대기를 했다가 periodSecond 에 정해진 주기 단위로 컨테이너의 헬스 체크를 한다. initialDelaySecond를 주는 이유는, 컨테이너가 기동 되면서 애플리케이션이 기동될텐데, 설정 정보나 각종 초기화 작업이 필요하기 때문에, 컨테이너가 기동되자 마자 헬스 체크를 하게 되면, 서비스할 준비가 되지 않았기 때문에 헬스 체크에 실패할 수 있기 때문에, 준비 기간을 주는 것이다. 준비 시간이 끝나면, periodSecond에 정의된 주기에 따라 헬스 체크를 진행하게 된다.
 
-이번 세션에서는, 특정 API 를 호출시 어플리케이션의 메모리 과부화를 발생시켜 서비스가 동작안하는 상황을 만든다. 그 후 livenessProbe 설정에 의하여 자동으로 서비스가 재시작 되는 실습을 한다.
 
+```
+          resources:
+            limits:
+              cpu: 500m
+            requests:
+              cpu: 200m
+          args:
+            - /bin/sh
+            - -c
+            - touch /tmp/healthy; sleep 90; rm -rf /tmp/healthy; sleep 600
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 100
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 1
+          livenessProbe:
+#            httpGet:
+#              path: '/actuator/health'
+#             port: 8080
+            exec: 
+              command:
+              - cat
+              - /tmp/healthy
+# 프로브는 포드의 모든 컨테이너가 생성되고 90초후에 호출되고, 2초내에 응답해야 하며, 쿠버네티스는 프로브를 5초마다 호출한다.
+# 호출의 결과가 세번이상 실패하면 컨테이는 중지되고 재시작될것이다. 
+            initialDelaySeconds: 90
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 3
+```
+
+kubectl get po -n ezinsurance -w
+
+NAME                           READY   STATUS    RESTARTS   AGE
+payment-7bf56d654c-f7hpr       0/1     CrashLoopBackOff   5          7m17s
+payment-7bf56d654c-f7hpr       0/1     Running            6          8m38s
+payment-7bf56d654c-f7hpr       0/1     CrashLoopBackOff   6          9m52s
+payment-7bf56d654c-f7hpr       0/1     Running            7          12m
+
+.
+포드의 상태를 확인했으나 기대한 대로 되지 않아 CrashLoopBackOff (shutdown->restart) 계속 발생함.
+
+- API 를 호출시 어플리케이션의 메모리 과부화를 발생시켜  livenessProbe 설정에 의하여 자동으로 서비스가 재시작으로 확
+
+--메모리 과부하 호출
+```
+public class PaymentController {
+
+    @GetMapping("callMemleak")
+    public void callMemleak() {
+
+        try {
+            Class unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field f = unsafeClass.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            Unsafe unsafe = (Unsafe) f.get(null);
+
+            System.out.println("\n=======callMemleak===========\n");
+
+            try {
+                for(;;) {
+                    unsafe.allocateMemory(1024*1024);
+                }
+            } catch (Error e) {
+                System.out.println("\n=======killing===========\n");
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+siege -c1 -t1S  --content-type "application/json" 'http://payment:8080/callMemleak' -v
+
+
+kubectl get po -n ezinsurance -w
+proposal-59576596c5-7j7b6      0/1     Running   2          6h34m
+payment-86cfb94d4b-tplgn       1/1     Running   0          5m38s
+payment-86cfb94d4b-tplgn       0/1     Error     0          5m44s
+payment-86cfb94d4b-tplgn       0/1     Running   1          5m45s
+payment-86cfb94d4b-tplgn       1/1     Running   1          7m11s
 
 
 #  ConfigMap 사용
@@ -1080,68 +1232,4 @@ data:
 ```		  
 
 
-# 신규 개발 조직의 추가
 
-  ![image](https://user-images.githubusercontent.com/487999/79684133-1d6c4300-826a-11ea-94a2-602e61814ebf.png)
-
-
-## 마케팅팀의 추가
-    - KPI: 신규 고객의 유입률 증대와 기존 고객의 충성도 향상
-    - 구현계획 마이크로 서비스: 기존 customer 마이크로 서비스를 인수하며, 고객에 음식 및 맛집 추천 서비스 등을 제공할 예정
-
-## 이벤트 스토밍 
-    ![image](https://user-images.githubusercontent.com/487999/79685356-2b729180-8273-11ea-9361-a434065f2249.png)
-
-
-## 헥사고날 아키텍처 변화 
-
-![image](https://user-images.githubusercontent.com/487999/79685243-1d704100-8272-11ea-8ef6-f4869c509996.png)
-
-## 구현  
-
-기존의 마이크로 서비스에 수정을 발생시키지 않도록 Inbund 요청을 REST 가 아닌 Event 를 Subscribe 하는 방식으로 구현. 기존 마이크로 서비스에 대하여 아키텍처나 기존 마이크로 서비스들의 데이터베이스 구조와 관계없이 추가됨. 
-
-## 운영과 Retirement
-
-Request/Response 방식으로 구현하지 않았기 때문에 서비스가 더이상 불필요해져도 Deployment 에서 제거되면 기존 마이크로 서비스에 어떤 영향도 주지 않음.
-
-* [비교] 결제 (pay) 마이크로서비스의 경우 API 변화나 Retire 시에 app(주문) 마이크로 서비스의 변경을 초래함:
-
-예) API 변화시
-```
-# Order.java (Entity)
-
-    @PostPersist
-    public void onPostPersist(){
-
-        fooddelivery.external.결제이력 pay = new fooddelivery.external.결제이력();
-        pay.setOrderId(getOrderId());
-        
-        Application.applicationContext.getBean(fooddelivery.external.결제이력Service.class)
-                .결제(pay);
-
-                --> 
-
-        Application.applicationContext.getBean(fooddelivery.external.결제이력Service.class)
-                .결제2(pay);
-
-    }
-```
-
-예) Retire 시
-```
-# Order.java (Entity)
-
-    @PostPersist
-    public void onPostPersist(){
-
-        /**
-        fooddelivery.external.결제이력 pay = new fooddelivery.external.결제이력();
-        pay.setOrderId(getOrderId());
-        
-        Application.applicationContext.getBean(fooddelivery.external.결제이력Service.class)
-                .결제(pay);
-
-        **/
-    }
-```
