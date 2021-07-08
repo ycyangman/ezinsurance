@@ -136,11 +136,12 @@
 ### 바운디드 컨텍스트로 묶기
 ![어그리게잇묶기_컨텍스트](https://user-images.githubusercontent.com/84304227/125000505-81f00980-e08b-11eb-9bf0-9362459c7d4e.PNG)
 
- - 도메인 서열 분리 
-   - Core Domain:  app(front), store : 없어서는 안될 핵심 서비스이며, 연견 Up-time SLA 수준을 99.999% 목표, 배포주기는 app 의 경우 1주일 1회 미만, store 의 경우 1개월 1회 미만
-  - Supporting Domain:   marketing, customer : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 배포주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
-  - General Domain:   pay : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
-- 
+    - 도메인 서열 분리 
+     - Core Domain:  상품, 가입설계, 청약 : 없어서는 안될 핵심 서비스이며, 연견 Up-time SLA 수준을 99.999% 목표, 배포주기는 청약의 경우 1주일 1회 미만, 가입설계의 경우 1개월 1회 미만
+     - Supporting Domain:   marketing, customer : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표,
+       배포주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
+     - General Domain:  alarm, pay : 알림톡, 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
+
 ### 폴리시 부착 
 정책은 이벤트 뒤에 따라오는 반응 적인 비지니스 로직이며 어디인가에 존재하는 커맨드를 트리거 한다.
 
