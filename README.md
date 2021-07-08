@@ -113,12 +113,6 @@
 # 분석/설계
 
 
-## AS-IS 조직 (Horizontally-Aligned)
-  ![image](https://user-images.githubusercontent.com/487999/79684144-2a893200-826a-11ea-9a01-79927d3a0107.png)
-
-## TO-BE 조직 (Vertically-Aligned)
-
-
 ## Event Storming 결과
 
 ### 이벤트 도출
@@ -352,31 +346,32 @@ public class Payment {
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 
   데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
 ```
-package ezdelivery;
+package ezinsurance.jpa;
 
 import java.util.List;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-@RepositoryRestResource(collectionResourceRel="payments", path="payments")
-public interface PaymentRepository extends PagingAndSortingRepository<Payment, Long>{
-    
-    List<Payment> findByStoreId(Long storeId);
-    List<Payment> findByOrderId(Long orderId);
+@RepositoryRestResource(collectionResourceRel="plans", path="plans")
+public interface PlanRepository extends PagingAndSortingRepository<Plan, Long>{
+
+    List<Plan> findByPpsdsnNo(String ppsdsnNo);
+
+    List<Plan> findByCustNo(String custNo);
 
 }
 ```
 - 적용 후 REST API 의 테스트
 ```
-# app 서비스의 주문처리
-http POST localhost:8080/orders storeId=1 storeName="동네치킨" host="요기요" menuName="치킨두마리" price=22000 guestName="홍길동" status="주문됨" guestAddress="광화문1번지" orderNumber=10 orderDateTime="20210615"
+# 설계처리
+http POST a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080/plans ^
+ppsdsnNo="" ppsdsnDt="20210708" prdcd="P00000005" prdnm="(무)재해사망보장" custNo="000000002" custNm="양건우" ^
+slctPlnrEno="1000000000" slctPlnrNm="보험사" slctDofOrgNo="999999" slctDofOrgNm="사이버창구" insPrd="20년" pmPrd="20년" ^
+pmCyl="월납" sprm="80000" entAmt="50000" progSt="가입설계" 
 
-# store 서비스의 배달처리
-http POST localhost:8080/deliverys orderId=2 status="배달중"
-
-# 주문 상태 확인
-http localhost:8080/orders/1
+# 설계상태 확인
+http localhost:8080/plans/1
 
 ```
 
@@ -578,17 +573,18 @@ slctPlnrNm="라이나" \
 ```
 
 #진행상태 확인
-
+```
 http a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080:8080/mypages     # 진행상태 안바뀜 확인
+```
 
 #마이페이지 서비스 기동
-cd 마이페이지
-mvn spring-boot:run
+
 
 #진행상태 확인
-http a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080:8080/mypages     # 모든 주문의 상태가 "배송됨"으로 확인
-
-
+```
+http a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080:8080/mypages     # 모든 주문의 상태 확인
+```
+![내보험조회](https://user-images.githubusercontent.com/84304227/124940038-965ce380-e044-11eb-82d0-5fa83ee92c84.PNG)
 
 # 운영
 
@@ -950,6 +946,12 @@ Shortest transaction:           0.01
 ```
 - 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 
 - 하지만, 84% 가 성공하였고, 26%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 Retry 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
+
+# kiali 화면에 서킷 브레이크 확인
+
+kubectl get all -n istio-system
+
+![kiali](https://user-images.githubusercontent.com/84304227/124938818-94465500-e043-11eb-966b-74e9fad21e68.PNG)
 
 
 ### 오토스케일 아웃
