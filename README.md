@@ -773,10 +773,17 @@ Image repository는 ECR 사용
 
 ## 동기식 호출 / 서킷 브레이킹 / 장애격리
 
+개요:
+여러 개의 서비스로 이루어진 시스템은 하나의 서비스의 장애 발생 시 다른 서비스가 영향을 받을 수 있음.
+서비스 인스턴스간 호출로 인해 communicatinon overhead 가 발생할 경우 서비스간
+회로 차단기(Circuit Breaker)를 두고 일정 시간 응답이 없는 경우 연결을 끊어서 장애가 확산 되는 것을 막을 요구가 생김
+NETFLIX 가 이러한 아키텍처를 실제 그들의 서비스 네트워크에 적용해 오픈소스(a.k.a 'NETFLIX OSS')로 공개한 Hystrix가 있지만 
+중앙집중적인 관리와 통제가 필요하게 되었고, 더불어 Service Discovery, Load Balancing, Fault Recovery, Metrics & Monitoring 등의 역할도 통합적으로 수행할
+Istio 등장 
 
+ 
 서킷 브레이킹 프레임워크의 선택: istio-injection + DestinationRule
-
-시나리오는 가입설계(plan) 보험료 계산시 --> 상품(product) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고  계산요청이 과도할 경우 CB 를 통하여 장애격리.
+시나리오는 청약(Proposal) --> 결제(pay) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 결제 요청이 과도할 경우 CB 를 통하여 장애격리.
 
 - DestinationRule 를 생성하여 circuit break 가 발생할 수 있도록 설정 최소 connection pool 설정
 
@@ -784,10 +791,10 @@ Image repository는 ECR 사용
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: dr-prod
+  name: dr-pay
   namespace: ezinsurance
 spec:
-  host: product
+  host: payment
   trafficPolicy:
     connectionPool:
       http:
@@ -802,16 +809,16 @@ spec:
 
 - istio-injection 활성화 및 room pod container 확인
 ```
-
 kubectl get ns -L istio-injection
 kubectl label namespace ezinsurance istio-injection=enabled
-
 ````
+![istio_injection](https://user-images.githubusercontent.com/84304227/124936402-7841b400-e041-11eb-8674-41ef04c71ea7.PNG)
+
 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
 
 - 동시사용자 1명, 10초 동안 부하 생성 시 모두 정상
 ```
-root@siege:/# siege -c1 -t10S -v --content-type "application/json" 'http://plan:8080/plans POST {"svcId":"PLA001SVC", "svcFn":"calcPrm", "prdcd":"P00000001","entAmt":"50000"}'
+siege -c10 -t60S -r10 --content-type "application/json" 'http://proposal:8080/proposals/online POST {"svcId":"NBA001SVC", "svcFn":"getCntr", "prpsNo":"20210704165943"}' -v
 ** SIEGE 4.0.4
 ** Preparing 1 concurrent users for battle.
 The server is now under siege...
@@ -866,22 +873,26 @@ $ siege -c6-t30S -r10 --content-type "application/json" 'http://plan:8080/plans 
 ** Preparing 100 concurrent users for battle.
 The server is now under siege...
 
-HTTP/1.1 201     0.68 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     0.68 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     0.70 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     0.70 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     0.73 secs:     207 bytes ==> POST http://localhost:8081/orders
-
+HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.16 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.33 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 
 * 요청이 과도하여 CB를 동작함 요청을 차단
 
-HTTP/1.1 500     1.29 secs:     248 bytes ==> POST http://localhost:8081/orders   
-HTTP/1.1 500     1.24 secs:     248 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 500     1.23 secs:     248 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 500     1.42 secs:     248 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 500     2.08 secs:     248 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     1.29 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 500     1.24 secs:     248 bytes ==> POST http://localhost:8081/orders
+[error] socket: read error Connection reset by peer sock.c:539: Connection reset by peer
+HTTP/1.1 500     0.51 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+[error] socket: read error Connection reset by peer sock.c:539: Connection reset by peer
+HTTP/1.1 500     0.09 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.52 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.52 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.10 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.19 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.09 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.17 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.10 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
 
 * 요청을 어느정도 돌려보내고나니, 기존에 밀린 일들이 처리되었고, 회로를 닫아 요청을 다시 받기 시작
 
@@ -895,10 +906,16 @@ HTTP/1.1 201     1.68 secs:     207 bytes ==> POST http://localhost:8081/orders
 
 * 다시 요청이 쌓이기 시작하여 건당 처리시간이 610 밀리를 살짝 넘기기 시작 => 회로 열기 => 요청 실패처리
 
-HTTP/1.1 500     1.93 secs:     248 bytes ==> POST http://localhost:8081/orders    
-HTTP/1.1 500     1.92 secs:     248 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 500     1.93 secs:     248 bytes ==> POST http://localhost:8081/orders
-
+HTTP/1.1 200     1.69 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.17 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.40 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.40 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.41 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.33 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.18 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 * 생각보다 빨리 상태 호전됨 - (건당 (쓰레드당) 처리시간이 610 밀리 미만으로 회복) => 요청 수락
 
 HTTP/1.1 201     2.24 secs:     207 bytes ==> POST http://localhost:8081/orders  
@@ -912,36 +929,28 @@ HTTP/1.1 201     2.29 secs:     207 bytes ==> POST http://localhost:8081/orders
 HTTP/1.1 201     2.30 secs:     207 bytes ==> POST http://localhost:8081/orders
 HTTP/1.1 201     2.38 secs:     207 bytes ==> POST http://localhost:8081/orders
 
-
 * 이후 이러한 패턴이 계속 반복되면서 시스템은 도미노 현상이나 자원 소모의 폭주 없이 잘 운영됨
 
-
-HTTP/1.1 500     4.76 secs:     248 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 500     4.23 secs:     248 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     4.76 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     4.74 secs:     207 bytes ==> POST http://localhost:8081/orders
-
-:
 :
 
-Transactions:		        1025 hits
-Availability:		       63.55 %
-Elapsed time:		       59.78 secs
-Data transferred:	        0.34 MB
-Response time:		        5.60 secs
-Transaction rate:	       17.15 trans/sec
-Throughput:		        0.01 MB/sec
-Concurrency:		       96.02
-Successful transactions:        1025
-Failed transactions:	         588
-Longest transaction:	        9.20
-Shortest transaction:	        0.00
+Lifting the server siege...
+Transactions:                    445 hits
+Availability:                  84.28 %
+Elapsed time:                  59.69 secs
+Data transferred:               0.18 MB
+Response time:                  1.32 secs
+Transaction rate:               7.46 trans/sec
+Throughput:                     0.00 MB/sec
+Concurrency:                    9.83
+Successful transactions:         445
+Failed transactions:              83
+Longest transaction:            1.74
+Shortest transaction:           0.01
 
 ```
-- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 하지만, 63.55% 가 성공하였고, 46%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 Retry 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
+- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 
+- 하지만, 84% 가 성공하였고, 26%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 Retry 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
 
-- Retry 의 설정 (istio)
-- Availability 가 높아진 것을 확인 (siege)
 
 ### 오토스케일 아웃
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
@@ -966,7 +975,7 @@ kubectl apply -f customer.yaml
               cpu: 200m
 ```
 
-- 결제서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
+- 고객서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
 kubectl autoscale deploy customer -n ezinsurance --min=1 --max=10 --cpu-percent=15
 
@@ -975,11 +984,7 @@ kubectl autoscale deploy customer -n ezinsurance --min=1 --max=10 --cpu-percent=
 ```
 siege -c61 -t120S -r1 -v  "application/json" 'http://customer:8080/customers'
 ```
-- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
-```
-kubectl get deploy plan -customer -n ezinsurance 
-kubectl get deploy order -w
-```
+- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 ```
 root@labs--620633116:/home/project/personal/ezinsurance/yaml# kubectl get deploy customer -n ezinsurance -w 
