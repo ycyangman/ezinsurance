@@ -859,11 +859,11 @@ istio-injection 적용 (기 적용완료)
 kubectl label namespace ezinsurance istio-injection=enabled
 ```
 * 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- 동시사용자 100명
+- 동시사용자 10명
 - 60초 동안 실시
 
 ```
-$ siege -c6-t30S -r10 --content-type "application/json" 'http://plan:8080/plans POST {"svcId":"PLA001SVC", "svcFn":"calcPrm", "prdcd":"P00000001","entAmt":"50000"}' -v
+$ siege -c10 -t60S -r10 --content-type "application/json" 'http://proposal:8080/proposals/online POST {"svcId":"NBA001SVC", "svcFn":"getCntr", "prpsNo":"20210704165943"}' -v
 
 ** SIEGE 4.0.5
 ** Preparing 100 concurrent users for battle.
@@ -902,28 +902,29 @@ HTTP/1.1 201     1.68 secs:     207 bytes ==> POST http://localhost:8081/orders
 
 * 다시 요청이 쌓이기 시작하여 건당 처리시간이 610 밀리를 살짝 넘기기 시작 => 회로 열기 => 요청 실패처리
 
-HTTP/1.1 200     1.69 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.17 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.40 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.40 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.41 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.33 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.18 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+[error] socket: read error Connection reset by peer sock.c:539: Connection reset by peer
 HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.32 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
-HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.01 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.02 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.37 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.07 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 500     0.01 secs:     179 bytes ==> POST http://proposal:8080/proposals/online
+
 * 생각보다 빨리 상태 호전됨 - (건당 (쓰레드당) 처리시간이 610 밀리 미만으로 회복) => 요청 수락
 
-HTTP/1.1 201     2.24 secs:     207 bytes ==> POST http://localhost:8081/orders  
-HTTP/1.1 201     2.32 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.16 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.19 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.19 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.19 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.21 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.29 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.30 secs:     207 bytes ==> POST http://localhost:8081/orders
-HTTP/1.1 201     2.38 secs:     207 bytes ==> POST http://localhost:8081/orders
+HTTP/1.1 200     1.33 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.34 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.30 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
+HTTP/1.1 200     1.31 secs:     408 bytes ==> POST http://proposal:8080/proposals/online
 
 * 이후 이러한 패턴이 계속 반복되면서 시스템은 도미노 현상이나 자원 소모의 폭주 없이 잘 운영됨
 
