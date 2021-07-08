@@ -7,9 +7,9 @@ data:
   #kafka.brokers: "my-kafka.kafka.svc.cluster.local:9092"
   #kafka.brokers: "localhost:9092"
   # maribdb 접속정보
-  datasource.schema: "ezins"
-  datasource.username: "sklina"
-  datasource.password: "123456"
+  datasource.schema: "ez???"
+  datasource.username: "sk????"
+  datasource.password: "?????"
   api.url.payment: http://paymemt:8080
   api.url.product: http://product:8080
   alarm.prefix: Hello
