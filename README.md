@@ -451,7 +451,8 @@ alarm은 SQL DB를 사용하였다.
 
 ## 동기식 호출 과 Fallback 처리
 
-분석단계에서의 조건 중 하나로 청약(proposal)->결제(payment) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
+분석단계에서의 조건 중 하나로 가입설계(plan)->상품(product) 간의 호출(인수기준체크)은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 
+호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
 
 - 상품서비스(인수기준 체크)를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
 
@@ -501,7 +502,6 @@ public interface ProductService {
 ```
 
 - 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
-
 
 ```
 # 상품(product) 서비스를 잠시 내려놓음 (ctrl+c)
