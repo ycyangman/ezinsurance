@@ -475,7 +475,7 @@ public interface ProductService {
 
 - 보험료 계산시 인수조건 체크하도록 처리
 ```
-# Proposal.java (Entity)
+# Plan.java (Entity)
 
 	ProductVO productInfo = null;
 	try {
@@ -770,9 +770,10 @@ kubectl apply -f product.yaml
 kubectl apply -f plan.yaml
 kubectl apply -f proposal.yaml
 kubectl apply -f myinsurance.yaml
-kubectl apply -f proposal.yaml
 kubectl apply -f payment.yaml
 kubectl apply -f alarm.yaml
+
+kubectl delete -f alarm.yaml
 
 ```
 ## CI/CD 설정
@@ -785,9 +786,9 @@ Image repository는 ECR 사용
 개요:
 여러 개의 서비스로 이루어진 시스템은 하나의 서비스의 장애 발생 시 다른 서비스가 영향을 받을 수 있음.
 서비스 인스턴스간 호출로 인해 communicatinon overhead 가 발생할 경우 서비스간
-회로 차단기(Circuit Breaker)를 두고 일정 시간 응답이 없는 경우 연결을 끊어서 장애가 확산 되는 것을 막을 요구가 생김
-NETFLIX 가 이러한 아키텍처를 실제 그들의 서비스 네트워크에 적용해 오픈소스(a.k.a 'NETFLIX OSS')로 공개한 Hystrix가 있지만 
-중앙집중적인 관리와 통제가 필요하게 되었고, 더불어 Service Discovery, Load Balancing, Fault Recovery, Metrics & Monitoring 등의 역할도 통합적으로 수행할
+회로 차단기(Circuit Breaker)를 두고 일정 시간 응답이 없는 경우 연결을 끊어서 장애가 확산 되는 것을 막을 요구가 생김.
+NETFLIX 가 이러한 아키텍처를 실제 그들의 서비스 네트워크에 적용해 오픈소스(a.k.a 'NETFLIX OSS')로 공개한 Hystrix가 있지만 모든 서비싀의 적용 및 관리의 부담.
+따라서 중앙집중적인 관리와 통제가 필요하게 되었고, 더불어 Service Discovery, Load Balancing, Fault Recovery, Metrics & Monitoring 등의 역할도 통합적으로 수행할
 Istio 등장 
 
  
@@ -817,10 +818,7 @@ spec:
 ```
 
 - istio-injection 활성화 및 room pod container 확인
-```
-kubectl get ns -L istio-injection
-kubectl label namespace ezinsurance istio-injection=enabled
-````
+
 ![istio_injection](https://user-images.githubusercontent.com/84304227/124936402-7841b400-e041-11eb-8674-41ef04c71ea7.PNG)
 
 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
@@ -857,12 +855,13 @@ Shortest transaction:           1.66
 서킷 브레이킹을 위한 DestinationRule 적용
 
 ```
+kubectl get ns -L istio-injection
+kubectl label namespace ezinsurance istio-injection=enabled
+````
+
+```
 cd ../yaml
 kubectl apply -f dr-pay.yaml
-```
-istio-injection 적용 (기 적용완료)
-```
-kubectl label namespace ezinsurance istio-injection=enabled
 ```
 * 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
 - 동시사용자 10명
@@ -977,12 +976,12 @@ kubectl autoscale deploy customer -n ezinsurance --min=1 --max=10 --cpu-percent=
 ```
 - 워크로드를 2분 동안 걸어준다.
 ```
-siege -c61 -t120S -r1 -v  "application/json" 'http://customer:8080/customers'
+siege -c60 -t120S -r1 -v  "application/json" 'http://customer:8080/customers'
 ```
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 ```
-root@labs--620633116:/home/project/personal/ezinsurance/yaml# kubectl get deploy customer -n ezinsurance -w 
+# kubectl get deploy customer -n ezinsurance -w 
 NAME       READY   UP-TO-DATE   AVAILABLE   AGE
 customer   1/1     1            1           4m39s
 customer   1/4     1            1           5m52s
@@ -995,7 +994,7 @@ customer   4/4     4            4           5m57s
 customer   4/8     4            4           6m7s
 :
 
-root@labs--620633116:/home/project/personal/ezinsurance/yaml# kubectl get hpa -n ezinsurance
+# kubectl get hpa -n ezinsurance
 NAME       REFERENCE             TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
 customer   Deployment/customer   5%/15%          1         10        10         12m
 plan       Deployment/plan       <unknown>/15%   1         10        1          28m
