@@ -1165,7 +1165,7 @@ public class PaymentController {
     }
 }
 ```
-
+```
 siege -c1 -t1S  --content-type "application/json" 'http://payment:8080/callMemleak' -v
 
 kubectl get po -n ezinsurance -w
@@ -1174,7 +1174,7 @@ payment-86cfb94d4b-tplgn       1/1     Running   0          5m38s
 payment-86cfb94d4b-tplgn       0/1     Error     0          5m44s
 payment-86cfb94d4b-tplgn       0/1     Running   1          5m45s
 payment-86cfb94d4b-tplgn       1/1     Running   1          7m11s
-
+```
 
 #  ConfigMap 사용
 --시스템별로 또는 운영중에 동적으로 변경 가능성이 있는 설정들을 ConfigMap을 사용하여 관리합니다.
@@ -1212,19 +1212,24 @@ data:
   datasource.username: "sk????"
   datasource.password: "????????"
   api.url.payment: http://payment:8080
-  api.url.proudct: http://paymemt:8080
+  api.url.proudct: http://product:8080
   alarm.prefix: Hello
 
 #yaml/plan.yaml (configmap 사용)
 
+    spec:
       containers:
-        - name: order
-          image: 740569282574.dkr.ecr.eu-central-1.amazonaws.com/user08-ezinsurance-order:latest
+        - name: plan
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/ezinsurance-plan:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
-#환경설정 START
           env:
+            - name: api.url.product
+              valueFrom:
+                configMapKeyRef:
+                  name: ezinsurance-config
+                  key: api.url.product
             - name: DATASOURCE_SCHEMA
               valueFrom:
                 configMapKeyRef:
@@ -1233,12 +1238,12 @@ data:
             - name: DATASOURCE_USERNAME
               valueFrom:
                 configMapKeyRef:
-                  name: ezdelivery-config
+                  name: ezinsurance-config
                   key: datasource.username
             - name: DATASOURCE_PASSWORD
               valueFrom:
                 configMapKeyRef:
-                  name: ezdelivery-config
+                  name: ezinsurance-config
                   key: datasource.password
 #환경설정 END
 ```		  
