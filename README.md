@@ -501,7 +501,7 @@ public interface ProductService {
 	}
 ```
 
-- 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
+- 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 상품시스템이 장애가 나면 가입설계가 불가하는것을 확인:
 
 ```
 # 상품(product) 서비스를 잠시 내려놓음 (ctrl+c)
@@ -525,10 +525,7 @@ public interface ProductService {
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
-결제가 이루어진 후에 숙소 시스템의 상태가 업데이트 되고, 예약 시스템의 상태가 업데이트 되며, 예약 및 취소 메시지가 전송되는 시스템과의 통신 행위는 비동기식으로 처리한다.
-
 결제가 이루어진 후에 청약시스템으로 진행결과를 알려주는 행위는 동기식이 아니라 비동기식으로 처리되어 청약상태 및 후속 계약업무도 비동기 식으로 처리한다.
-
 - 이를 위하여 결제이력에 기록을 남긴 후에 곧바로 결제승인이 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
  
 ```
@@ -554,7 +551,6 @@ public class Payment {
 
 ```
 package ezinsurance;
-
 ...
 
 @Service
@@ -567,22 +563,18 @@ public class PolicyHandler{
 	//카프카 멘시지 수신처리.
 	// 결재후에 업무처리 ...
 
-
     	String eventType = eventInfo.getEventType();
-
-
     }
-
 }
 
 ```
 실제 구현을 하자면, 카톡 등으로 상품설명서발행, 설계저장 등의 본인진행상태를 확인하고 청약업무를 진행한다.
   
+메시지 서비스는 청약/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 내보험조회 서비스가 유지보수로 인해 잠시 내려간 상태 라도 청약을 받는데 문제가 없다.
 
-메시지 서비스는 예약/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 메시지 서비스가 유지보수로 인해 잠시 내려간 상태 라도 예약을 받는데 문제가 없다.
-
-#메시지서비시 를 잠시 내려놓음
+#내보험조회 를 잠시 내려놓음
 ```
+
 http POST a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.com:8080/proposals \
 ppsdsnNo="20210708033005" \
 prdcd="P00000005" \
@@ -613,7 +605,7 @@ http a22d3b5447dbb4210808d20343a700a4-1771169070.ap-southeast-2.elb.amazonaws.co
 
 * EKS Cluster create
 ```
-$ eksctl create cluster --user08-eks --version 1.15 --nodegroup-name standard-workers --node-type t3.medium --nodes 3 --nodes-min 1 --nodes-max 4
+$ eksctl create cluster --user08-eks --version 1.17--nodegroup-name standard-workers --node-type t3.medium --nodes 7--nodes-min 1 --nodes-max 4
 ```
 
 * EKS Cluster settings
