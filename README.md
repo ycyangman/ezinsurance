@@ -25,8 +25,6 @@
 
 # 서비스 시나리오
 
-배달의 민족 커버하기 - https://1sung.tistory.com/106
-
 기능적 요구사항
 1. 보험상품관리자는 상품을 등록하고 변경한다.
 1. 고객이 고객정보 등록을 한다.
@@ -402,7 +400,7 @@ http localhost:8080/plans/1
 
 앱프런트 (app) 는 서비스 특성상 많은 사용자의 유입과 상품 정보의 다양한 콘텐츠를 저장해야 하는 특징으로 인해 
 Marid DB 를 사용하기로 하였다. 
-mypage 별다른 작업없이 기존의 Entity Pattern 과 Repository Pattern 적용과 데이터베이스 제품의 설정 (application.yml) 만으로 H2메모리,
+mypage 별다른 작업없이 기존의 Entity Pattern 과 Repository Pattern 적용과 데이터베이스 제품의 설정 (application.yml) 만으로 H2메모리 DB,
 alarm은 SQL DB를 사용하였다.
 
 ```
