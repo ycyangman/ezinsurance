@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ezInsurance.com</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/common.js" charset="utf-8"></script>
+    <script type="text/javascript">
+
+    jQuery(document).ready(function(){
+        loadProducts();
+
+        $("#btnProdcut").click(function() {
+            loadProducts();
+        });
+		
+		$('.rd_wrap button').click(function(e){
+			e.preventDefault();
+			$(this).addClass('chked').attr('title','선택됨');
+			$(this).siblings().removeClass('chked').removeAttr('title');
+			$('input[name="gndrCd"]').val($(this).val());
+			//alert($('input[name="gndrCd"]').val());
+		});
+		
+		$('.step_box').click(function(e){
+			if(e && e.srcElement && e.srcElement.innerHTML && e.srcElement.innerHTML.indexOf('선택완료')>-1){
+			}else{
+				$('.step_box').removeClass('active');
+				$(this).addClass('active');
+			}
+		});
+			// step01 보장 선택 버튼
+		$('.oc_product_list li button').bind("click",function(e){
+			e.preventDefault();
+
+			$(this).parent('li').toggleClass('on');
+
+			$('input[name="prdcd"]').val($(this).val());
+			
+			if($(this).parent('li.list').hasClass('on')){
+				//alert($(this).parent('li.list').hasClass('on'));
+				$('.oc_product_list li.list_all').removeClass('on').find('button').attr('title','전제선택해제됨');
+				$(this).parent('li').find('button').attr('title','선택됨');
+			} 
+			else if($(this).parent('li.list_all').hasClass('on')){
+				$('.oc_product_list li.list').removeClass('on').find('button').attr('title','선택됨');
+				$(this).parent('li.list_all').find('button').attr('title','전체선택됨');
+			} else{
+				$(this).parent('li.list').find('button').attr('title','선택해제됨');
+				//alert("else" + $(this).parent('li.list').hasClass('on'));
+				$('.oc_product_list li.list_all').removeClass('on').find('button').attr('title','전제선택해제됨');
+			}
+		});
+    });
+
+    function loadProducts() {
+  
+    }
+
+    function calcPremium() {
+
+        var data = {};
+
+        data['svcId']  = 'PLA001SVC';
+		data['svcFn']  = 'calcPrm';
+        data['prdcd']  = $("#prdcd").val();
+        data['custNm'] = $("#custNm").val();
+        data['gndrCd']  = $("#gndrCd").val();
+        data['aclBirdt'] = $("#aclBirdt").val();
+		data['phoneNo'] = $("#phoneNo").val();
+        //data['entAmt']  = '100000';
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json",
+            dataType: 'json',
+            url: "/plans/online",
+            data: JSON.stringify(data),
+            success: function(result){
+                console.log(result);
+				alert("보험료:" +result.data.prm);
+            },
+
+            error:function(request,status,error){
+	            console.log(status);
+				alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+             }
+        });
+    }
+
+    function openReView(prodcutId) {
+        var url = "reveiwPopup.html?"+prodcutId;
+        window.open(url,"","width=800,height=400");
+    }
+
+    </script>
+
+</head>
+<body>
+
+<div class="wrap">
+    <div class="header">
+        <a href="index.html"><h1 class="logo">ezInsurance.com</h1></a>
+        <nav>
+            <ul class="topmenu">
+                <li><a href="productList.html">상품관리</a></li>
+                <li><a href="planList.html">설계내역</a></li>
+                <li><a href="paymentList.html">결제내역</a></li>
+                <li><a href="mypages.html">내보험조회</a></li>
+                <li><a href="alarms.html">알림보기</a></li>
+            </ul>
+        </nav>
+    </div>
+
+
+	<div class="oneclick_cont">
+		<div class="inner">
+			<h3 class="h3_tit">보험료 간편조회 서비스</h3>
+
+			<div class="step_box_wrap  icon_box_wrap">
+				<div class="step_box active">
+					<div class="step_info">
+						<p class="step_text"><strong>보장선택</strong></p>
+					</div>
+					<div class="step_con">
+						<ul class="oc_product_list">
+						<li class="list icon01"><button type="button" value="P00000001" title="선택해제됨"><span>치아</span><em>치과 치료 본인부담률<br><b class="under">81.1%</b></em></button></li>
+						<li class="list icon02"><button type="button" value="P00000002"><span>암</span><em>한국인의 사망원인<br><b>1위 암 <i class="after">27.9%</i></b></em></button></li>									
+						<li class="list icon03"><button type="button" value="P00000003"><span>치매·실버</span><em>치매환자 돌봄비용<br><b>연간 <i class="under">2,074만원</i></b></em></button></li>										
+						<li class="list icon04"><button type="button" value="P00000004"><span>건강</span><em>수술로 인한 진료비<br><b>평균 약 <i class="under">321만원</i></b></em></button></li>
+						<li class="list icon05"><button type="button" value="P00000005"><span>사망정기</span><em>1일 평균 사망자<br><b class="under">819명</b></em></button></li>
+						</ul>
+					  <input type="hidden" name="prdcd" id="prdcd" value=""/>
+					  <div class="inp_wrap name_wrap">
+							<span class="input_lb"><label for="inquireName">이름</label></span>
+							<em class="input_area"><input type="text" class="g_input_01" name="custNm" id="custNm" maxlength="6" placeholder=""></em>
+						</div>
+					  
+					  <div class="inp_wrap">
+							<!-- label for="" : + input ID와 같은 값 부여 -->
+							<span class="input_lb"><label for="inquireBirthday">생년월일</label></span>
+							<em class="input_area"><input type="number" class="g_input_01" name="aclBirdt" id="aclBirdt" maxlength="8" id="inquireBirthday" placeholder="예) 19940101"></em>
+						</div>
+					  
+						<div class="rd_wrap gender_wrap">
+							<span class="input_lb">성별</span>
+							<em class="input_area">
+								<button type="button" class="gender male" value="1">남자</button>
+								<button type="button" class="gender female" value="2">여자</button>
+							</em>
+							<input type="hidden" name="gndrCd" id="gndrCd" value=""/>
+						</div>
+						
+						<div class="inp_wrap">
+							<span class="input_lb"><label for="inquireTel">휴대폰번호</label></span>
+							<em class="input_area"><input type="number" class="g_input_01" name="phoneNo" id="phoneNo" maxlength="11" id="inquireTel" placeholder="예) 01012345678"></em>
+						</div>
+					</div>
+				</div>
+		  </div>  
+			
+		  <div class="confirm">
+			<a href="javascript:calcPremium()" class="btn_oneclick01 btnOneclick"><span>보험료 확인하기</span></a>						
+		  </div>
+		  
+		</div>
+	</div>
+
+</div>
+</body>
+</html>

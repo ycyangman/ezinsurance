@@ -1,0 +1,259 @@
+--상품
+CREATE TABLE TBMSAPD001
+(
+    `PRDCD`           VARCHAR(9)        NULL        COMMENT '상품코드',
+    `PRDNM`           VARCHAR(100)      NULL        COMMENT '상품명',
+    `INS_DCD`         VARCHAR(2)        NULL        COMMENT '보험구분코드',
+    `PRD_SELL_OPN_DT` VARCHAR(8)        NULL        COMMENT '상품판매개시일자',
+    `PRD_SELL_END_DT` VARCHAR(8)        NULL        COMMENT '상품판매종료일자',
+    `INS_PRD_TYP_VL`  INT               NULL        COMMENT '보험기간유형값',
+    `INS_PRD_YCNT`    INT               NULL        COMMENT '보험기간년수',
+    `PM_PRD_TPCD`     VARCHAR(2)        NULL        COMMENT '납입기간유형코드',
+    `PM_PRD`          INT               NULL        COMMENT '납입기간',
+    `PM_PRD_MCNT`     INT               NULL        COMMENT '납입기간개월수',
+    `PM_CYL_CD`       VARCHAR(2)        NULL        COMMENT '납입주기코드',
+    `MIN_ENT_AMT`     DECIMAL(15, 0)    NULL        COMMENT '최소가입금액',
+    `MAX_ENT_AMT`     DECIMAL(15, 0)    NULL        COMMENT '최대가입금액',
+    `MIN_ENT_AGE`     INT               NULL        COMMENT '최소가입연령',
+    `MAX_ENT_AGE`     INT               NULL        COMMENT '최대가입연령',
+    `PRM`             DECIMAL(15, 0)    NULL        COMMENT '보험료',
+    CONSTRAINT PRIMARY KEY (PRDCD)
+);
+
+--상품1건 입력
+INSERT INTO ezins.tbmsapd001
+(PRDCD, PRDNM, INS_DCD, PRD_SELL_OPN_DT, PRD_SELL_END_DT, INS_PRD_TYP_VL, INS_PRD_YCNT, PM_PRD_TPCD, PM_PRD, PM_PRD_MCNT, PM_CYL_CD, MIN_ENT_AMT, MAX_ENT_AMT, MIN_ENT_AGE, MAX_ENT_AGE, PRM, id, ins_prd, pm_cyl)
+VALUES('P00000001', '치아보험', '01', '20250101', '99991231', NULL, 10, '10', NULL, NULL, NULL, 100, 100000, 10, 90, 1000, 1, NULL, NULL);
+
+
+CREATE TABLE TBMSAPD010
+(
+    `ISUE_NO`          VARCHAR(15)     NOT NULL    COMMENT '발행번호',
+    `ISUE_REF_NO`      VARCHAR(15)     NOT NULL    COMMENT '발행참조번호',
+    `PRDCD`           VARCHAR(9)        NULL        COMMENT '상품코드',
+    `ISUE_DT`          VARCHAR(15)     NOT NULL    COMMENT '발행일자',
+    `FORM_TPCD`        VARCHAR(9)      NULL        COMMENT '양식코드',
+    `FORM_NM`          VARCHAR(200)    NULL        COMMENT '양식명',
+    `NOTCL_PRNT_CTNT`  VARCHAR(1000)   NULL        COMMENT '안내장출력내용',
+    `SEND_YN`          VARCHAR(1)      NULL        COMMENT '전송여부',
+
+    --CONSTRAINT PRIMARY KEY (ISUE_REF_NO, ISUE_NO)
+);
+
+//필수
+CREATE TABLE TBMSAPL001
+(
+    `id`                 BIGINT(20)        NOT NULL AUTO_INCREMENT,
+	`PPSDSN_NO`          VARCHAR(15)       NULL        COMMENT '가입설계번호',
+    `PPSDSN_DT`          VARCHAR(8)        NULL        COMMENT '가입설계일자',
+    `PRDCD`              VARCHAR(9)        NULL        COMMENT '상품코드',
+    `PRDNM`              VARCHAR(100)      NULL        COMMENT '상품명',
+    `CUST_NO`            VARCHAR(9)        NULL        COMMENT '고객번호',
+    `CUST_NM`            VARCHAR(40)       NULL        COMMENT '고객명',
+    `SLCT_PLNR_ENO`      VARCHAR(10)       NULL        COMMENT '모집설계사사원번호',
+    `SLCT_PLNR_NM`       VARCHAR(30)       NULL        COMMENT '모집설계사사원명',
+    `SLCT_DOF_ORG_NO`    VARCHAR(6)        NULL        COMMENT '모집지점조직번호',
+    `SLCT_DOF_ORG_NM`    VARCHAR(50)       NULL        COMMENT '모집지점조직명',
+    `INS_PRD`            VARCHAR(20)       NULL        COMMENT '보험기간',
+    `PM_PRD`             VARCHAR(20)       NULL        COMMENT '납입기간',
+    `PM_CYL`             VARCHAR(20)       NULL        COMMENT '납입주기명',
+    `SPRM`               DECIMAL(15, 0)    NULL        COMMENT '합계보험료',
+    `ENT_AMT`            DECIMAL(15, 0)    NULL        COMMENT '가입금액',
+    `PROD_DESD_ISUE_DT`  VARCHAR(8)        NULL        COMMENT '상품설명서발행일자',
+    `PROG_ST`            VARCHAR(20)       NULL        COMMENT '진행상태',
+    PRIMARY KEY (`id`) USING BTREE
+);
+
+ALTER TABLE TBMSAPL001 COMMENT '가입설계';
+
+//필수
+CREATE TABLE TBMSAPL002
+(
+    `PPSDSN_NO`         VARCHAR(15)      NOT NULL    COMMENT '가입설계번호',
+    `CUST_CONT_RELCD`   VARCHAR(2)       NULL        COMMENT '고객계약관계코드',
+    `CUST_NO`           VARCHAR(9)       NULL        COMMENT '고객번호',
+    `RELP_SEQ`          INT              NULL        COMMENT '관계자순번',
+	`CUST_CONT_RELNM`   VARCHAR(20)      NULL        COMMENT '고객계약관계명',
+    `CUST_NM`           VARCHAR(40)      NULL        COMMENT '고객명',
+    `AGE`               INT              NULL        COMMENT '연령',
+    `GNDR_CD`           VARCHAR(2)       NULL        COMMENT '성별코드',
+    `INS_JOB_CD`        VARCHAR(6)       NULL        COMMENT '보험직업코드',
+    `INS_JOB_NM`        VARCHAR(50)      NULL        COMMENT '보험직업명',
+    `LAST_RSK_GCD`      VARCHAR(1)       NULL        COMMENT '최종위험등급코드',
+    `VHCL_KCD`          VARCHAR(6)       NULL        COMMENT '차량종류코드',
+    `PINSD_CUST_RELCD`  VARCHAR(3)       NULL        COMMENT '주피보험자고객관계코드',
+    `INSD_CUST_RELCD`   VARCHAR(3)       NULL        COMMENT '피보험자고객관계코드',
+    `HOBY_CD`           VARCHAR(2)       NULL        COMMENT '취미코드',
+    `RSK_GCD`           VARCHAR(1)       NULL        COMMENT '위험등급코드',
+    `DRVG_JOB_CD`       VARCHAR(6)       NULL        COMMENT '운전직업코드',
+    PRIMARY KEY (PPSDSN_NO, CUST_CONT_RELCD, CUST_NO, RELP_SEQ) USING BTREE
+);
+ALTER TABLE TBMSAPL002 COMMENT '설계관계자';
+//필수
+CREATE TABLE TBMSAPL003
+(
+    `DSN_INS_NO`      VARCHAR(16)       NOT NULL    COMMENT '설계보험번호',
+    `PPSDSN_NO`       VARCHAR(14)       NULL        COMMENT '가입설계번호',
+    `INSCD`           VARCHAR(9)        NULL        COMMENT '보험코드',
+    `INSNM`           VARCHAR(100)        NULL        COMMENT '보험명',
+    `INS_DCD`         VARCHAR(2)        NULL        COMMENT '보험구분코드',
+    `INS_CONT_DT`     VARCHAR(8)        NULL        COMMENT '보험계약일자',
+    `INS_PRD`         VARCHAR(20)       NULL        COMMENT '보험기간(명)',
+    `INS_PRD_TPCD`    VARCHAR(2)        NULL        COMMENT '보험기간유형코드',
+    `INS_PRD_TYP_VL`  INT               NULL        COMMENT '보험기간유형값',
+    `INS_PRD_YCNT`    INT               NULL        COMMENT '보험기간년수',
+    `PM_PRD_TPCD`     VARCHAR(2)        NULL        COMMENT '납입기간유형코드',
+    `PM_PRD`          VARCHAR(20)       NULL        COMMENT '납입기간',
+    `PM_PRD_MCNT`     INT               NULL        COMMENT '납입기간개월수',
+    `PM_CYL_CD`       VARCHAR(2)        NULL        COMMENT '납입주기코드',
+    `PM_CYL`          VARCHAR(20)       NULL        COMMENT '납입주기명(명)',
+    `EXPI_DT`         VARCHAR(8)        NULL        COMMENT '만기일자',
+    `ENT_AMT`         DECIMAL(15, 0)    NULL        COMMENT '가입금액',
+    `PRM`             DECIMAL(15, 0)    NULL        COMMENT '보험료',
+    `NPRN`            DECIMAL(15, 0)    NULL        COMMENT '순보험료',
+    `INS_ENT_AGE`     INT               NULL        COMMENT '보험가입연령',
+    `INS_STCD`        VARCHAR(2)        NULL        COMMENT '보험상태코드',
+    `INS_STA_DTL_CD`  VARCHAR(6)        NULL        COMMENT '보험상태상세코드',
+    `TRT_TPCD`        VARCHAR(2)        NULL        COMMENT '특약유형코드',
+    PRIMARY KEY (DSN_INS_NO)
+);
+
+ALTER TABLE TBMSAPL003 COMMENT '설계보험';
+
+CREATE TABLE TBMSANB001
+(
+    `id`                 BIGINT(20)        NOT NULL AUTO_INCREMENT,
+	`PRPS_NO`            VARCHAR(14)       NOT NULL    COMMENT '청약번호',
+    `PRPS_DT`            VARCHAR(8)        NULL        COMMENT '청약일자',
+    `PRDCD`              VARCHAR(9)        NULL        COMMENT '상품코드',
+    `PRDNM`              VARCHAR(100)      NULL        COMMENT '상품명',
+    `CUST_NO`            VARCHAR(9)        NULL        COMMENT '고객번호',
+    `CUST_NM`            VARCHAR(40)       NULL        COMMENT '고객명',
+    `CONT_NO`            VARCHAR(13)       NULL        COMMENT '계약번호',
+    `CONT_DT`            VARCHAR(8)        NULL        COMMENT '계약일자',
+    `CONT_STCD`          VARCHAR(2)        NULL        COMMENT '계약상태코드',
+	`CONT_STNM`          VARCHAR(20)       NULL        COMMENT '계약상태명',
+    `PRPS_STCD`          VARCHAR(2)        NULL        COMMENT '청약상태코드',
+	`PRPS_STNM`          VARCHAR(20)       NULL        COMMENT '청약상태명',
+    `PM_MCD`             VARCHAR(2)        NULL        COMMENT '납입방법코드',
+    `PM_CYL_CD`          VARCHAR(2)        NULL        COMMENT '납입주기코드',
+    `SPRM`               DECIMAL(15, 0)    NULL        COMMENT '합계보험료',
+	`ENT_AMT`            DECIMAL(15, 0)    NULL        COMMENT '가입금액',
+    `RLPM_PRM`           DECIMAL(15, 0)    NULL        COMMENT '실납입보험료',
+    `PPSDSN_NO`          VARCHAR(15)       NULL        COMMENT '가입설계번호',
+    `DPS_DT`             VARCHAR(8)        NULL        COMMENT '입금일자',
+    `PRPSD_ISUE_DT`      VARCHAR(8)        NULL        COMMENT '청약서발행일자',
+    `SLCT_PLNR_ENO`      VARCHAR(10)       NULL        COMMENT '모집설계사사원번호',
+    `SLCT_PLNR_NM`       VARCHAR(30)       NULL        COMMENT '모집설계사사원명',
+    `SLCT_DOF_ORG_NO`    VARCHAR(6)        NULL        COMMENT '모집지점조직번호',
+    `SLCT_DOF_ORG_NM`    VARCHAR(50)       NULL        COMMENT '모집지점조직명',
+
+    CONSTRAINT PRIMARY KEY (id)
+);
+
+ALTER TABLE TBMSANB001 COMMENT '청약';
+
+CREATE TABLE TBMSANB002
+(
+    `PRPS_NO`           VARCHAR(14)      NOT NULL    COMMENT '청약번호',
+    `CUST_CONT_RELCD`   VARCHAR(2)       NULL        COMMENT '고객계약관계코드',
+    `CUST_NO`           VARCHAR(9)       NULL        COMMENT '고객번호',
+    `PRPS_RELP_SEQ`     INT              NULL        COMMENT '청약관계자순번',
+	`CUST_CONT_RELNM`   VARCHAR(20)       NULL        COMMENT '고객계약관계코드',
+    `CUST_NM`           VARCHAR(40)      NULL        COMMENT '고객명',
+    `AGE`               INT              NULL        COMMENT '연령',
+    `GNDR_CD`           VARCHAR(2)       NULL        COMMENT '성별코드',
+    `INS_JOB_CD`        VARCHAR(6)       NULL        COMMENT '보험직업코드',
+    `INS_JOB_NM`        VARCHAR(50)      NULL        COMMENT '보험직업명',
+    `BENFC_DIST_RT`     NUMERIC(5, 2)    NULL        COMMENT '수익자배분율',
+    `LAST_RSK_GCD`      VARCHAR(1)       NULL        COMMENT '최종위험등급코드',
+    `VHCL_KCD`          VARCHAR(6)       NULL        COMMENT '차량종류코드',
+    `PINSD_CUST_RELCD`  VARCHAR(3)       NULL        COMMENT '주피보험자고객관계코드',
+    `INSD_CUST_RELCD`   VARCHAR(3)       NULL        COMMENT '피보험자고객관계코드',
+    `HOBY_CD`           VARCHAR(2)       NULL        COMMENT '취미코드',
+    `RSK_GCD`           VARCHAR(1)       NULL        COMMENT '위험등급코드',
+    `DRVG_JOB_CD`       VARCHAR(6)       NULL        COMMENT '운전직업코드',
+    PRIMARY KEY (PRPS_NO, CUST_CONT_RELCD, CUST_NO, PRPS_RELP_SEQ) USING BTREE
+
+);
+ALTER TABLE TBMSANB002 COMMENT '청약관계자';
+
+CREATE TABLE TBMSANB003
+(
+    `PRPS_INS_NO`     VARCHAR(15)       NOT NULL    COMMENT '청약보험번호',
+    `PRPS_NO`         VARCHAR(14)       NULL        COMMENT '청약번호',
+    `INSCD`           VARCHAR(9)        NULL        COMMENT '보험코드',
+    `INSNM`           VARCHAR(100)      NULL        COMMENT '보험명',
+    `INS_DCD`         VARCHAR(2)        NULL        COMMENT '보험구분코드',
+    `INS_CONT_DT`     VARCHAR(8)        NULL        COMMENT '보험계약일자',
+    `INS_PRD`         VARCHAR(20)       NULL        COMMENT '보험기간(명)',
+    `INS_PRD_TPCD`    VARCHAR(2)        NULL        COMMENT '보험기간유형코드',
+    `INS_PRD_TYP_VL`  INT               NULL        COMMENT '보험기간유형값',
+    `INS_PRD_YCNT`    INT               NULL        COMMENT '보험기간년수',
+    `PM_PRD_TPCD`     VARCHAR(2)        NULL        COMMENT '납입기간유형코드',
+    `PM_PRD`          VARCHAR(20)       NULL        COMMENT '납입기간',
+    `PM_PRD_MCNT`     INT               NULL        COMMENT '납입기간개월수',
+    `PM_CYL_CD`       VARCHAR(2)        NULL        COMMENT '납입주기코드',
+    `PM_CYL`          VARCHAR(20)       NULL        COMMENT '납입주기명(명)',
+    `EXPI_DT`         VARCHAR(8)        NULL        COMMENT '만기일자',
+    `ENT_AMT`         DECIMAL(15, 0)    NULL        COMMENT '가입금액',
+    `PRM`             DECIMAL(15, 0)    NULL        COMMENT '보험료',
+    `NPRN`            DECIMAL(15, 0)    NULL        COMMENT '순보험료',
+    `INS_ENT_AGE`     INT               NULL        COMMENT '보험가입연령',
+    `INS_STCD`        VARCHAR(2)        NULL        COMMENT '보험상태코드',
+    `INS_STA_DTL_CD`  VARCHAR(6)        NULL        COMMENT '보험상태상세코드',
+    `TRT_TPCD`        VARCHAR(2)        NULL        COMMENT '특약유형코드',
+    PRIMARY KEY (PRPS_INS_NO)
+);
+ALTER TABLE TBMSANB003 COMMENT '청약보험';
+
+-------------------
+
+CREATE TABLE TBMSAPA001
+(
+    `PRPS_NO`             VARCHAR(14)    NOT NULL    COMMENT '청약번호',
+    `ACT_DCD`             VARCHAR(2)     NOT NULL    COMMENT '계좌구분코드',
+    `CUST_NO`             VARCHAR(9)     NULL        COMMENT '고객번호',
+    `FININ_CD`            VARCHAR(3)     NULL        COMMENT '금융기관코드',
+    `FININ_NM`            VARCHAR(3)     NULL        COMMENT '금융기관명',
+    `ACT_NO`              VARCHAR(54)    NULL        COMMENT '계좌번호',
+    `ACHD_NM`             VARCHAR(40)    NULL        COMMENT '예금주명',
+    `ACT_STCD`            VARCHAR(2)     NULL        COMMENT '계좌상태코드',
+    `ANSW_CD`             VARCHAR(4)     NULL        COMMENT '응답코드',
+    `STA_VRFC_DTM`        VARCHAR(14)    NULL        COMMENT '계좌상태확인일시',
+    `PAY_AMT`             DECIMAL(15, 0) NULL        COMMENT '결제금액',
+    `PAY_DTM`             VARCHAR(14)    NULL        COMMENT '결제일시',
+     PRIMARY KEY (PRPS_NO, ACT_DCD)
+);
+
+ALTER TABLE TBMSAPA001 COMMENT '결재내역';
+
+@Column(name="prps_no"     , length=14) private String prpsNo    ; //청약번호
+@Column(name="act_dcd"     , length=2)  private String actDcd    ; //계좌구분코드
+@Column(name="cust_no"     , length=9)  private String custNo    ; //고객번호
+@Column(name="finin_cd"    , length=3)  private String fininCd   ; //금융기관코드
+@Column(name="finin_nm"    , length=3)  private String fininNm   ; //금융기관명
+@Column(name="act_no"      , length=50) private String actNo     ; //계좌번호
+@Column(name="achd_nm"     , length=40) private String achdNm    ; //예금주명
+@Column(name="act_stcd"    , length=2)  private String actStcd   ; //계좌상태코드
+@Column(name="answ_cd"     , length=4)  private String answCd    ; //응답코드
+@Column(name="sta_vrfc_dtm", length=14) private String staVrfcDtm; //상태확인일시
+@Column(name="pay_amt"     , length=15) private BigDecimal payAmt; //결제금액
+@Column(name="pay_dtm"     , length=14) private String payDtm    ; //결제일시
+
+
+
+
+private String prpsNo    ;
+private String actDcd    ;
+private String custNo    ;
+private String fininCd   ;
+private String fininNm   ;
+private String actNo     ;
+private String achdNm    ;
+private String actStcd   ;
+private String answCd    ;
+private String staVrfcDtm;
+private BigDecimal payAmt;
+private String payDtm    ;
+

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ezinsurance.dm.TBMSAPL002DM">
+    <select id="selectOneTBMSAPL002a" resultType="ezinsurance.vo.PlanRelsVO">
+		SELECT
+			 ppsdsn_no         AS ppsdsnNo        /* 가입설계번호 */
+			,cust_cont_relcd   AS custContRelcd   /* 고객계약관계코드 */
+			,cust_cont_relnm   AS custContRelnm   /* 고객계약관계명 */
+			,cust_no           AS custNo          /* 고객번호 */
+			,relp_seq          AS relpSeq         /* 관계자순번 */
+			,cust_nm           AS custNm          /* 고객명 */
+			,age               AS age             /* 연령 */
+			,gndr_cd           AS gndrCd          /* 성별코드 */
+			,ins_job_cd        AS insJobCd        /* 보험직업코드 */
+			,ins_job_nm        AS insJobNm        /* 보험직업명 */
+			,last_rsk_gcd      AS lastRskGcd      /* 최종위험등급코드 */
+			,vhcl_kcd          AS vhclKcd         /* 차량종류코드 */
+			,pinsd_cust_relcd  AS pinsdCustRelcd  /* 주피보험자고객관계코드 */
+			,insd_cust_relcd   AS insdCustRelcd   /* 피보험자고객관계코드 */
+			,hoby_cd           AS hobyCd          /* 취미코드 */
+			,rsk_gcd           AS rskGcd          /* 위험등급코드 */
+			,drvg_job_cd       AS drvgJobCd       /* 운전직업코드 */
+		 FROM TBMSAPL002 
+		WHERE 1=1
+		 AND ppsdsn_no = #{ppsdsnNo}
+		 AND cust_cont_relcd = #{custContRelcd}
+		 AND cust_no = #{custNo}
+		 AND relp_seq = #{relp_seq}
+    </select>
+
+    <select id="selectListTBMSAPL002a" resultType="ezinsurance.vo.PlanRelsVO">
+		SELECT
+			 ppsdsn_no         AS ppsdsnNo        /* 가입설계번호 */
+			,cust_cont_relcd   AS custContRelcd   /* 고객계약관계코드 */
+			,cust_cont_relnm   AS custContRelnm   /* 고객계약관계명 */
+			,cust_no           AS custNo          /* 고객번호 */
+			,relp_seq          AS relpSeq         /* 관계자순번 */
+			,cust_nm           AS custNm          /* 고객명 */
+			,age               AS age             /* 연령 */
+			,gndr_cd           AS gndrCd          /* 성별코드 */
+			,ins_job_cd        AS insJobCd        /* 보험직업코드 */
+			,ins_job_nm        AS insJobNm        /* 보험직업명 */
+			,last_rsk_gcd      AS lastRskGcd      /* 최종위험등급코드 */
+			,vhcl_kcd          AS vhclKcd         /* 차량종류코드 */
+			,pinsd_cust_relcd  AS pinsdCustRelcd  /* 주피보험자고객관계코드 */
+			,insd_cust_relcd   AS insdCustRelcd   /* 피보험자고객관계코드 */
+			,hoby_cd           AS hobyCd          /* 취미코드 */
+			,rsk_gcd           AS rskGcd          /* 위험등급코드 */
+			,drvg_job_cd       AS drvgJobCd       /* 운전직업코드 */
+		 FROM TBMSAPL002 
+		WHERE 1=1
+		 AND ppsdsn_no = #{ppsdsnNo}
+    </select>
+
+	<update id="updateOneTBMSAPL002a" parameterType="ezinsurance.vo.PlanRelsVO">
+		UPDATE  
+			TBMSAPL002  
+		SET  
+		 <trim suffixOverrides=",">   
+			<if test=" custContRelnm  != null AND custContRelnm  != '' "> cust_cont_relnm  = #{custContRelnm }, </if>
+			<if test=" custNm         != null AND custNm         != '' "> cust_nm          = #{custNm        }, </if>
+			<if test=" age            != null AND age            != '' "> age              = #{age           }, </if>
+			<if test=" gndrCd         != null AND gndrCd         != '' "> gndr_cd          = #{gndrCd        }, </if>
+			<if test=" insJobCd       != null AND insJobCd       != '' "> ins_job_cd       = #{insJobCd      }, </if>
+			<if test=" insJobNm       != null AND insJobNb       != '' "> ins_job_nm       = #{insJobNm      }, </if>
+			<if test=" lastRskGcd     != null AND lastRskGcd     != '' "> last_rsk_gcd     = #{lastRskGcd    }, </if>
+			<if test=" vhclKcd        != null AND vhclKcd        != '' "> vhcl_kcd         = #{vhclKcd       }, </if>
+			<if test=" pinsdCustRelcd != null AND pinsdCustRelcd != '' "> pinsd_cust_relcd = #{pinsdCustRelcd}, </if>
+			<if test=" insdCustRelcd  != null AND insdCustRelcd  != '' "> insd_cust_relcd  = #{insdCustRelcd }, </if>
+			<if test=" hobyCd         != null AND hobyCd         != '' "> hoby_cd          = #{hobyCd        }, </if>
+			<if test=" rskGcd         != null AND rskGcd         != '' "> rsk_gcd          = #{rskGcd        }, </if>
+			<if test=" drvgJobCd      != null AND drvgJobCd      != '' "> drvg_job_cd      = #{drvgJobCd     }  </if>
+		</trim>
+		WHERE 1=1
+		 AND ppsdsn_no = #{ppsdsnNo}
+		 AND cust_cont_relcd = #{custContRelcd}
+		 AND cust_no = #{custNo}
+		 AND relp_seq = #{relp_seq}
+	</update>
+
+	<insert id="insertTBMSAPL002a" parameterType="ezinsurance.vo.PlanRelsVO">
+		INSERT  INTO TBMSAPL002
+		(
+			ppsdsn_no         /* 가입설계번호 */
+			,cust_cont_relcd   /* 고객계약관계코드 */
+			,cust_cont_relnm   /* 고객계약관계명 */
+			,cust_no           /* 고객번호 */
+			,relp_seq          /* 관계자순번 */
+			,cust_nm           /* 고객명 */
+			,age               /* 연령 */
+			,gndr_cd           /* 성별코드 */
+			,ins_job_cd        /* 보험직업코드 */
+			,ins_job_nm        /* 보험직업명 */
+			,last_rsk_gcd      /* 최종위험등급코드 */
+			,vhcl_kcd          /* 차량종류코드 */
+			,pinsd_cust_relcd  /* 주피보험자고객관계코드 */
+			,insd_cust_relcd   /* 피보험자고객관계코드 */
+			,hoby_cd           /* 취미코드 */
+			,rsk_gcd           /* 위험등급코드 */
+			,drvg_job_cd       /* 운전직업코드 */
+		)
+		VALUES 
+		(
+			 #{ppsdsnNo      , jdbcType=VARCHAR}  /* 가입설계번호 */
+			,#{custContRelcd , jdbcType=VARCHAR}  /* 고객계약관계코드 */
+			,#{custContRelnm , jdbcType=VARCHAR}  /* 고객계약관계명 */
+			,#{custNo        , jdbcType=VARCHAR}  /* 고객번호 */
+			,#{relpSeq       , jdbcType=NUMERIC}  /* 관계자순번 */
+			,#{custNm        , jdbcType=VARCHAR}  /* 고객명 */
+			,#{age           , jdbcType=NUMERIC}  /* 연령 */
+			,#{gndrCd        , jdbcType=VARCHAR}  /* 성별코드 */
+			,#{insJobCd      , jdbcType=VARCHAR}  /* 보험직업코드 */
+			,#{insJobNm      , jdbcType=VARCHAR}  /* 보험직업명 */
+			,#{lastRskGcd    , jdbcType=VARCHAR}  /* 최종위험등급코드 */
+			,#{vhclKcd       , jdbcType=VARCHAR}  /* 차량종류코드 */
+			,#{pinsdCustRelcd, jdbcType=VARCHAR}  /* 주피보험자고객관계코드 */
+			,#{insdCustRelcd , jdbcType=VARCHAR}  /* 피보험자고객관계코드 */
+			,#{hobyCd        , jdbcType=VARCHAR}  /* 취미코드 */
+			,#{rskGcd        , jdbcType=VARCHAR}  /* 위험등급코드 */
+			,#{drvgJobCd     , jdbcType=VARCHAR}  /* 운전직업코드 */
+		)
+	</insert>
+
+
+</mapper>

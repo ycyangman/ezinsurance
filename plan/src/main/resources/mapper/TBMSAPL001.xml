@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ezinsurance.dm.TBMSAPL001DM">
+    <select id="selectOneTBMSAPL001a" resultType="ezinsurance.vo.PlanInfoVO">
+		SELECT
+			 ppsdsn_no          AS   ppsdsnNo /* 가입설계번호*/
+			,ppsdsn_dt          AS  ppsdsnDt /* 가입설계일자*/
+			,prdcd              AS  prdcd /* 상품코드*/
+			,prdnm              AS  prdnm /* 상품명*/
+			,cust_no            AS  custNo /* 고객번호*/
+			,cust_nm            AS  custNm /* 고객명*/
+			,slct_plnr_eno      AS  slctPlnrEno /* 모집설계사사원번호*/
+			,slct_plnr_nm       AS  slctPlnrNm /* 모집설계사사원명*/
+			,slct_dof_org_no    AS  slctDofOrgNo /* 모집지점조직번호*/
+			,slct_dof_org_nm    AS  slctDofOrgNm /* 모집지점조직명*/
+			,ins_prd            AS  insPrd /* 보험기간*/
+			,pm_prd             AS  pmPrd /* 납입기간*/
+			,pm_cyl             AS  pmCyl /* 납입주기명*/
+			,sprm               AS  sprm /* 합계보험료*/
+			,ent_amt            AS  entAmt /* 가입금액*/
+			,prod_desd_isue_dt  AS  prodDesdIsueDt /* 상품설명서발행일자*/
+			,prog_st            AS  progSt /* 진행상태*/
+		FROM TBMSAPL001
+		WHERE ppsdsn_no = #{ppsdsnNo}
+    </select>
+
+    <select id="selectListTBMSAPL001a" resultType="ezinsurance.vo.PlanInfoVO">
+		SELECT
+			 ppsdsn_no          AS  ppsdsnNo /* 가입설계번호*/
+			,ppsdsn_dt          AS  ppsdsnDt /* 가입설계일자*/
+			,prdcd              AS  prdcd /* 상품코드*/
+			,prdnm              AS  prdnm /* 상품명*/
+			,cust_no            AS  custNo /* 고객번호*/
+			,cust_nm            AS  custNm /* 고객명*/
+			,slct_plnr_eno      AS  slctPlnrEno /* 모집설계사사원번호*/
+			,slct_plnr_nm       AS  slctPlnrNm /* 모집설계사사원명*/
+			,slct_dof_org_no    AS  slctDofOrgNo /* 모집지점조직번호*/
+			,slct_dof_org_nm    AS  slctDofOrgNm /* 모집지점조직명*/
+			,ins_prd            AS  insPrd /* 보험기간*/
+			,pm_prd             AS  pmPrd /* 납입기간*/
+			,pm_cyl             AS  pmCyl /* 납입주기명*/
+			,sprm               AS  sprm /* 합계보험료*/
+			,ent_amt            AS  entAmt /* 가입금액*/
+			,prod_desd_isue_dt  AS  prodDesdIsueDt /* 상품설명서발행일자*/
+			,prog_st            AS  progSt /* 진행상태*/
+		FROM TBMSAPL001
+		WHERE cust_no = #{custNo}
+    </select>
+
+	<update id="updateOneTBMSAPL001a" parameterType="java.util.HashMap">
+		UPDATE  
+			TBMSAPL001  
+		SET  prog_st = #{progSt}
+	  WHERE  ppsdsn_no = #{ppsdsnNo}
+	</update>
+
+	<insert id="insertTBMSAPL001a" parameterType="ezinsurance.vo.PlanInfoVO">
+		INSERT  INTO TBMSAPL001
+		(
+		 ppsdsn_no          /* 가입설계번호*/
+		,ppsdsn_dt          /* 가입설계일자*/
+		,prdcd              /* 상품코드*/
+		,prdnm              /* 상품명*/
+		,cust_no            /* 고객번호*/
+		,cust_nm            /* 고객명*/
+		,slct_plnr_eno      /* 모집설계사사원번호*/
+		,slct_plnr_nm       /* 모집설계사사원명*/
+		,slct_dof_org_no    /* 모집지점조직번호*/
+		,slct_dof_org_nm    /* 모집지점조직명*/
+		,ins_prd            /* 보험기간*/
+		,pm_prd             /* 납입기간*/
+		,pm_cyl             /* 납입주기명*/
+		,sprm               /* 합계보험료*/
+		,ent_amt            /* 가입금액*/
+		,prod_desd_isue_dt  /* 상품설명서발행일자*/
+		,prog_st            /* 진행상태*/
+		,reg_dtm            /* 등록일시 */
+		)
+		VALUES
+		(
+		 #{ppsdsnNo      , jdbcType=VARCHAR}  /* 가입설계번호*/
+		,#{ppsdsnDt      , jdbcType=VARCHAR}  /* 가입설계일자*/
+		,#{prdcd         , jdbcType=VARCHAR}  /* 상품코드*/
+		,#{prdnm         , jdbcType=VARCHAR}  /* 상품명*/
+		,#{custNo        , jdbcType=VARCHAR}  /* 고객번호*/
+		,#{custNm        , jdbcType=VARCHAR}  /* 고객명*/
+		,#{slctPlnrEno   , jdbcType=VARCHAR}  /* 모집설계사사원번호*/
+		,#{slctPlnrNm    , jdbcType=VARCHAR}  /* 모집설계사사원명*/
+		,#{slctDofOrgNo  , jdbcType=VARCHAR}  /* 모집지점조직번호*/
+		,#{slctDofOrgNm  , jdbcType=VARCHAR}  /* 모집지점조직명*/
+		,#{insPrd        , jdbcType=VARCHAR}  /* 보험기간*/
+		,#{pmPrd         , jdbcType=VARCHAR}  /* 납입기간*/
+		,#{pmCyl         , jdbcType=VARCHAR}  /* 납입주기명*/
+		,#{sprm          , jdbcType=NUMERIC}  /* 합계보험료*/
+		,#{entAmt        , jdbcType=NUMERIC}  /* 가입금액*/
+		,#{prodDesdIsueDt, jdbcType=VARCHAR}  /* 상품설명서발행일자*/
+		,#{progSt        , jdbcType=VARCHAR}  /* 진행상태*/
+		,SYSDATE()
+		)
+	</insert>
+</mapper>

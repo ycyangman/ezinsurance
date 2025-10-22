@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ezinsurance.dm.TBMSAPL003DM">
+	<select id="selectOneTBMSAPL003a" resultType="ezinsurance.vo.PlanInsVO">
+		SELECT
+		dsn_ins_no      AS dsnInsNo      /* 설계보험번호    */
+		,ppsdsn_no       AS ppsdsnNo      /* 가입설계번호    */
+		,inscd           AS inscd         /* 보험코드      */
+		,insnm           AS insnm         /* 보험명        */
+		,ins_dcd         AS insDcd        /* 보험구분코드    */
+		,ins_cont_dt     AS insContDt     /* 보험계약일자    */
+		,ins_prd         AS insPrd        /* 보험기간(명)   */
+		,ins_prd_tpcd    AS insPrdTpcd    /* 보험기간유형코드  */
+		,ins_prd_typ_vl  AS insPrdTypVl   /* 보험기간유형값   */
+		,ins_prd_ycnt    AS insPrdYcnt    /* 보험기간년수    */
+		,pm_prd_tpcd     AS pmPrdTpcd     /* 납입기간유형코드  */
+		,pm_prd          AS pmPrd         /* 납입기간      */
+		,pm_prd_mcnt     AS pmPrdMcnt     /* 납입기간개월수   */
+		,pm_cyl_cd       AS pmCylCd       /* 납입주기코드    */
+		,pm_cyl          AS pmCyl         /* 납입주기명(명)  */
+		,expi_dt         AS expiDt        /* 만기일자      */
+		,ent_amt         AS entAmt        /* 가입금액      */
+		,prm             AS prm           /* 보험료        */
+		,nprn            AS nprn          /* 순보험료      */
+		,ins_ent_age     AS insEntAge     /* 보험가입연령    */
+		,ins_stcd        AS insStcd       /* 보험상태코드    */
+		,ins_sta_dtl_cd  AS insStaDtlCd   /* 보험상태상세코드  */
+		,trt_tpcd        AS trtTpcd       /* 특약유형코드    */
+		FROM TBMSAPL003
+		WHERE 1=1
+		AND dsn_ins_no = #{dsnInsNo}
+	</select>
+
+	<select id="selectListTBMSAPL003a" resultType="ezinsurance.vo.PlanInsVO">
+		SELECT
+		dsn_ins_no      AS dsnInsNo      /* 설계보험번호    */
+		,ppsdsn_no       AS ppsdsnNo      /* 가입설계번호    */
+		,inscd           AS inscd         /* 보험코드      */
+		,insnm           AS insnm         /* 보험명        */
+		,ins_dcd         AS insDcd        /* 보험구분코드    */
+		,ins_cont_dt     AS insContDt     /* 보험계약일자    */
+		,ins_prd         AS insPrd        /* 보험기간(명)   */
+		,ins_prd_tpcd    AS insPrdTpcd    /* 보험기간유형코드  */
+		,ins_prd_typ_vl  AS insPrdTypVl   /* 보험기간유형값   */
+		,ins_prd_ycnt    AS insPrdYcnt    /* 보험기간년수    */
+		,pm_prd_tpcd     AS pmPrdTpcd     /* 납입기간유형코드  */
+		,pm_prd          AS pmPrd         /* 납입기간      */
+		,pm_prd_mcnt     AS pmPrdMcnt     /* 납입기간개월수   */
+		,pm_cyl_cd       AS pmCylCd       /* 납입주기코드    */
+		,pm_cyl          AS pmCyl         /* 납입주기명(명)  */
+		,expi_dt         AS expiDt        /* 만기일자      */
+		,ent_amt         AS entAmt        /* 가입금액      */
+		,prm             AS prm           /* 보험료        */
+		,nprn            AS nprn          /* 순보험료      */
+		,ins_ent_age     AS insEntAge     /* 보험가입연령    */
+		,ins_stcd        AS insStcd       /* 보험상태코드    */
+		,ins_sta_dtl_cd  AS insStaDtlCd   /* 보험상태상세코드  */
+		,trt_tpcd        AS trtTpcd       /* 특약유형코드    */
+		FROM TBMSAPL003
+		WHERE 1=1
+		AND ppsdsn_no = #{ppsdsnNo}
+	</select>
+
+	<update id="updateOneTBMSAPL003a" parameterType="ezinsurance.vo.PlanInsVO">
+		UPDATE
+		TBMSAPL003
+		SET
+		<trim suffixOverrides=",">
+			<if test="ppsdsnNo    != null AND ppsdsnNo    != '' "> ppsdsn_no      = #{ppsdsnNo   }, </if>
+			<if test="inscd       != null AND inscd       != '' "> inscd          = #{inscd      }, </if>
+			<if test="insnm       != null AND insnm       != '' "> insnm          = #{insnm      }, </if>
+			<if test="insDcd      != null AND insDcd      != '' "> ins_dcd        = #{insDcd     }, </if>
+			<if test="insContDt   != null AND insContDt   != '' "> ins_cont_dt    = #{insContDt  }, </if>
+			<if test="insPrd      != null AND insPrd      != '' "> ins_prd        = #{insPrd     }, </if>
+			<if test="insPrdTpcd  != null AND insPrdTpcd  != '' "> ins_prd_tpcd   = #{insPrdTpcd }, </if>
+			<if test="insPrdTypVl != null AND insPrdTypVl != '' "> ins_prd_typ_vl = #{insPrdTypVl}, </if>
+			<if test="insPrdYcnt  != null AND insPrdYcnt  != '' "> ins_prd_ycnt   = #{insPrdYcnt }, </if>
+			<if test="pmPrdTpcd   != null AND pmPrdTpcd   != '' "> pm_prd_tpcd    = #{pmPrdTpcd  }, </if>
+			<if test="pmPrd       != null AND pmPrd       != '' "> pm_prd         = #{pmPrd      }, </if>
+			<if test="pmPrdMcnt   != null AND pmPrdMcnt   != '' "> pm_prd_mcnt    = #{pmPrdMcnt  }, </if>
+			<if test="pmCylCd     != null AND pmCylCd     != '' "> pm_cyl_cd      = #{pmCylCd    }, </if>
+			<if test="pmCyl       != null AND pmCyl       != '' "> pm_cyl         = #{pmCyl      }, </if>
+			<if test="expiDt      != null AND expiDt      != '' "> expi_dt        = #{expiDt     }, </if>
+			<if test="entAmt      != null AND entAmt      != '' "> ent_amt        = #{entAmt     }, </if>
+			<if test="prm         != null AND prm         != '' "> prm            = #{prm        }, </if>
+			<if test="nprn        != null AND nprn        != '' "> nprn           = #{nprn       }, </if>
+			<if test="insEntAge   != null AND insEntAge   != '' "> ins_ent_age    = #{insEntAge  }, </if>
+			<if test="insStcd     != null AND insStcd     != '' "> ins_stcd       = #{insStcd    }, </if>
+			<if test="insStaDtlCd != null AND insStaDtlCd != '' "> ins_sta_dtl_cd = #{insStaDtlCd}, </if>
+			<if test="trtTpcd     != null AND trtTpcd     != '' "> trt_tpcd       = #{trtTpcd    }  </if>
+		</trim>
+		WHERE 1=1
+		AND dsn_ins_no = #{dsnInsNo}
+	</update>
+
+	<insert id="insertTBMSAPL003a" parameterType="ezinsurance.vo.PlanInsVO">
+		INSERT  INTO TBMSAPL003
+		(
+		dsn_ins_no      /* 설계보험번호    */
+		,ppsdsn_no       /* 가입설계번호    */
+		,inscd           /* 보험코드      */
+		,insnm           /* 보험명        */
+		,ins_dcd         /* 보험구분코드    */
+		,ins_cont_dt     /* 보험계약일자    */
+		,ins_prd         /* 보험기간(명)   */
+		,ins_prd_tpcd    /* 보험기간유형코드  */
+		,ins_prd_typ_vl  /* 보험기간유형값   */
+		,ins_prd_ycnt    /* 보험기간년수    */
+		,pm_prd_tpcd     /* 납입기간유형코드  */
+		,pm_prd          /* 납입기간      */
+		,pm_prd_mcnt     /* 납입기간개월수   */
+		,pm_cyl_cd       /* 납입주기코드    */
+		,pm_cyl          /* 납입주기명(명)  */
+		,expi_dt         /* 만기일자      */
+		,ent_amt         /* 가입금액      */
+		,prm             /* 보험료        */
+		,nprn            /* 순보험료      */
+		,ins_ent_age     /* 보험가입연령    */
+		,ins_stcd        /* 보험상태코드    */
+		,ins_sta_dtl_cd  /* 보험상태상세코드  */
+		,trt_tpcd        /* 특약유형코드    */
+		)
+		VALUES
+		(
+		#{dsnInsNo    , jdbcType=VARCHAR}  /* 설계보험번호    */
+		,#{ppsdsnNo    , jdbcType=VARCHAR}  /* 가입설계번호    */
+		,#{inscd       , jdbcType=VARCHAR}  /* 보험코드      */
+		,#{insnm       , jdbcType=VARCHAR}  /* 보험명        */
+		,#{insDcd      , jdbcType=VARCHAR}  /* 보험구분코드    */
+		,#{insContDt   , jdbcType=VARCHAR}  /* 보험계약일자    */
+		,#{insPrd      , jdbcType=VARCHAR}  /* 보험기간(명)   */
+		,#{insPrdTpcd  , jdbcType=VARCHAR}  /* 보험기간유형코드  */
+		,#{insPrdTypVl , jdbcType=NUMERIC}  /* 보험기간유형값   */
+		,#{insPrdYcnt  , jdbcType=NUMERIC}  /* 보험기간년수    */
+		,#{pmPrdTpcd   , jdbcType=VARCHAR}  /* 납입기간유형코드  */
+		,#{pmPrd       , jdbcType=VARCHAR}  /* 납입기간      */
+		,#{pmPrdMcnt   , jdbcType=NUMERIC}  /* 납입기간개월수   */
+		,#{pmCylCd     , jdbcType=VARCHAR}  /* 납입주기코드    */
+		,#{pmCyl       , jdbcType=VARCHAR}  /* 납입주기명(명)  */
+		,#{expiDt      , jdbcType=VARCHAR}  /* 만기일자      */
+		,#{entAmt      , jdbcType=NUMERIC}  /* 가입금액      */
+		,#{prm         , jdbcType=NUMERIC}  /* 보험료        */
+		,#{nprn        , jdbcType=NUMERIC}  /* 순보험료      */
+		,#{insEntAge   , jdbcType=NUMERIC}  /* 보험가입연령    */
+		,#{insStcd     , jdbcType=VARCHAR}  /* 보험상태코드    */
+		,#{insStaDtlCd , jdbcType=VARCHAR}  /* 보험상태상세코드  */
+		,#{trtTpcd     , jdbcType=VARCHAR}  /* 특약유형코드    */
+		)
+	</insert>
+
+
+</mapper>
